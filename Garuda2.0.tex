@@ -42,8 +42,6 @@
 \acmYear{2020}
 % \acmDOI{10.1145/1122445.1122456}
 
-
-
 %%
 %% Submission ID.
 %% Use this when submitting an article to a sponsored event. You'll
@@ -200,27 +198,10 @@
 \maketitle
 
 
-\section{Test}
+\section{Introduction}
+\sysname Intro
 \cite{gem5_sim}
 \cite{Spec_TT}
-
-\section{Introduction}
-ACM's consolidated article template, introduced in 2017, provides a
-consistent \LaTeX\ style for use across ACM publications, and
-incorporates accessibility and metadata-extraction functionality
-necessary for future Digital Library endeavors. Numerous ACM and
-SIG-specific \LaTeX\ templates have been examined, and their unique
-features incorporated into this single new template.
-
-If you are new to publishing with ACM, this document is a valuable
-guide to the process of preparing your work for publication. If you
-have published with ACM before, this document provides insight and
-instruction into more recent changes to the article template.
-
-The ``\verb|acmart|'' document class can be used to prepare articles
-for any ACM publication --- conference or journal, and for any stage
-of publication, from review to final ``camera-ready'' copy, to the
-author's own version, with {\itshape very} few changes to the source.
 
 \section{Template Overview}
 As noted in the introduction, the ``\verb|acmart|'' document class can
@@ -306,12 +287,6 @@ as they will override the built-in typeface families.
 
 \section{Title Information}
 
-The title of your work should use capital letters appropriately -
-\url{https://capitalizemytitle.com/} has useful rules for
-capitalization. Use the {\verb|title|} command to define the title of
-your work. If your work has a subtitle, define it with the
-{\verb|subtitle|} command.  Do not insert line breaks in your title.
-
 If your title is lengthy, you must define a short version to be used
 in the page headers, to prevent overlapping text. The \verb|title|
 command has a ``short title'' parameter:
@@ -320,41 +295,6 @@ command has a ``short title'' parameter:
 \end{verbatim}
 
 \section{Authors and Affiliations}
-
-Each author must be defined separately for accurate metadata
-identification. Multiple authors may share one affiliation. Authors'
-names should not be abbreviated; use full first names wherever
-possible. Include authors' e-mail addresses whenever possible.
-
-Grouping authors' names or e-mail addresses, or providing an ``e-mail
-alias,'' as shown below, is not acceptable:
-\begin{verbatim}
-  \author{Brooke Aster, David Mehldau}
-  \email{dave,judy,steve@university.edu}
-  \email{firstname.lastname@phillips.org}
-\end{verbatim}
-
-The \verb|authornote| and \verb|authornotemark| commands allow a note
-to apply to multiple authors --- for example, if the first two authors
-of an article contributed equally to the work.
-
-If your author list is lengthy, you must define a shortened version of
-the list of authors to be used in the page headers, to prevent
-overlapping text. The following command should be placed just after
-the last \verb|\author{}| definition:
-\begin{verbatim}
-  \renewcommand{\shortauthors}{McCartney, et al.}
-\end{verbatim}
-Omitting this command will force the use of a concatenated list of all
-of the authors' names, which may result in overlapping text in the
-page headers.
-
-The article template's documentation, available at
-\url{https://www.acm.org/publications/proceedings-template}, has a
-complete explanation of these commands and tips for their effective
-use.
-
-Note that authors' addresses are mandatory for journal articles.
 
 \section{Rights Information}
 
@@ -403,15 +343,7 @@ CCS concepts and user-defined keywords are required for for all
 articles over two pages in length, and are optional for one- and
 two-page articles (or abstracts).
 
-\section{Sectioning Commands}
-
-Your work should use standard \LaTeX\ sectioning commands:
-\verb|section|, \verb|subsection|, \verb|subsubsection|, and
-\verb|paragraph|. They should be numbered; do not remove the numbering
-from the commands.
-
-Simulating a sectioning command by setting the first word or words of
-a paragraph in boldface or italicized text is {\bfseries not allowed.}
+%% Omitted: Make sure sections use standard sectioning conventions (\section, \subsepction, \paragraph...)
 
 \section{Tables}
 
@@ -673,7 +605,7 @@ To Robert, for the bagels and explaining CMYK and color spaces.
 %% The next two lines define the bibliography style to be used, and
 %% the bibliography file.
 \bibliographystyle{ACM-Reference-Format}
-\bibliography{sample-base}
+\bibliography{Garuda2.0}
 
 %%
 %% If your work has an appendix, this is the place to put it.
@@ -683,33 +615,15 @@ To Robert, for the bagels and explaining CMYK and color spaces.
 
 \subsection{Part One}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
-malesuada, quam in pulvinar varius, metus nunc fermentum urna, id
-sollicitudin purus odio sit amet enim. Aliquam ullamcorper eu ipsum
-vel mollis. Curabitur quis dictum nisl. Phasellus vel semper risus, et
-lacinia dolor. Integer ultricies commodo sem nec semper.
+Appendix A1
 
 \subsection{Part Two}
 
-Etiam commodo feugiat nisl pulvinar pellentesque. Etiam auctor sodales
-ligula, non varius nibh pulvinar semper. Suspendisse nec lectus non
-ipsum convallis congue hendrerit vitae sapien. Donec at laoreet
-eros. Vivamus non purus placerat, scelerisque diam eu, cursus
-ante. Etiam aliquam tortor auctor efficitur mattis.
+Appendix A2
 
 \section{Online Resources}
 
-Nam id fermentum dui. Suspendisse sagittis tortor a nulla mollis, in
-pulvinar ex pretium. Sed interdum orci quis metus euismod, et sagittis
-enim maximus. Vestibulum gravida massa ut felis suscipit
-congue. Quisque mattis elit a risus ultrices commodo venenatis eget
-dui. Etiam sagittis eleifend elementum.
-
-Nam interdum magna at lectus dignissim, ac dignissim lorem
-rhoncus. Maecenas eu arcu ac neque placerat aliquam. Nunc pulvinar
-massa et mattis lacinia.
+Appendix B
 
 \end{document}
 \endinput
-%%
-%% End of file `sample-sigchi.tex'.

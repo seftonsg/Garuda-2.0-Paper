@@ -67,7 +67,8 @@
 
 %%
 %% Custom definitions
-\def \sysname {\textsc{GARUDA}\xspace}
+\def \sysname {\textsc{G2}}
+\def \oldname {\textsc{GARUDA}}
 \def \defeq   {\triangleq}
 \newcommand{\interp}[1]{\llbracket #1 \rrbracket}
 
@@ -83,7 +84,7 @@
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{\sysname\ 2.0}
+\title{\sysname}
 
 %%
 %% The "author" command and its associated commands are used to define
@@ -127,6 +128,15 @@
 \renewcommand{\shortauthors}{Sefton and Karanth et. al.}
 
 \begin{abstract}
+
+Runtime monitors to enforce processor security policies are a widely researched field.
+Many systems tackle partcular issues such as non-interference, cache side-channel attacks, or speculation exploits \cite{ferraiuolo2017secverilogbl, Spec_TT}.
+As the attack model is ever-mutating and often undetected, these solutions can only ever solve part of the problem.
+Some solutions propose generic monitors based on programmable hardware monitors \cite{pump_oakland2015} or languages for describing arbitrary policies \cite{GARUDA, anderson2014netkat}.
+We build on the idea of verifiable policy design and empower \oldname to support Speculative and Out-of-Order Processors.
+The benefits of Speculative and OOP microarchitectures are one of the most significant advancements in recent latency-mitigation research.
+\sysname benefits from a new information model and taint tracking, implemented without changes to the language itself.
+These additions incur marginal processor overhead, and ring true to the spatial and power
 
 The purpose of this project is to apply the idea of verifiable policies to speculative processors.  We develop a full compiler for \system and demonstrate its capabilities.  We show that this system performs well on the gem5 O3 processor, a processor very similar to that found in modern computers.  We also create an automatic "hook" for the O3 processor allowing a user to simulate the overhead of a policy on their code.
 <insert metrics>?

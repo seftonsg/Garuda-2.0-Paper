@@ -133,9 +133,9 @@ Runtime monitors to enforce processor security policies are a widely researched 
 Many systems tackle partcular issues such as non-interference, cache side-channel attacks, or speculation exploits \cite{ferraiuolo2017secverilogbl, Spec_TT}.
 As the attack model is ever-mutating and often undetected, these solutions can only ever solve part of the problem.
 Some solutions propose generic monitors based on programmable hardware monitors \cite{pump_oakland2015} or languages for describing arbitrary policies \cite{GARUDA, anderson2014netkat}.
-We build on the idea of verifiable policy design and empower \oldname to support Speculative and Out-of-Order Processors.
+We build on the idea of verifiable policy design and empower \oldname\ to support Speculative and Out-of-Order Processors.
 The benefits of Speculative and OOP microarchitectures are one of the most significant advancements in recent latency-mitigation research.
-\sysname benefits from a refined information model and taint tracking, implemented without changes to the language itself.
+\sysname\ benefits from a refined information model and taint tracking, implemented without changes to the language itself.
 These additions incur marginal processor overhead, and ring true to the spatial and power efficiency goals of the past.
 We inject monitors into only one part of the processor and automate the comparator for a more streamlined design.
 Finally, we will release this code, compiler, and language on GitHub.

@@ -25,6 +25,9 @@
 % \documentclass[sigchi]{acmart}
 \documentclass[sigconf,usenames,dvipsnames,svgnames,table]{acmart}
 
+%% Standard Preamble
+    \usepackage{xspace} % Spacing for sysname
+
 %%
 %% \BibTeX command to typeset BibTeX logo in the docs
 \AtBeginDocument{%
@@ -67,8 +70,8 @@
 
 %%
 %% Custom definitions
-\def \sysname {\textsc{G2}}
-\def \oldname {\textsc{GARUDA}}
+\def \sysname {\textsc{G2}\xspace}
+\def \oldname {\textsc{GARUDA}\xspace}
 \def \defeq   {\triangleq}
 \newcommand{\interp}[1]{\llbracket #1 \rrbracket}
 
@@ -130,12 +133,12 @@
 \begin{abstract}
 
 Runtime monitors to enforce processor security policies are a widely researched field.
-Many systems tackle partcular issues such as non-interference, cache side-channel attacks, or speculation exploits \cite{ferraiuolo2017secverilogbl, Spec_TT}.
+Many systems tackle particular issues such as non-interference, cache side-channel attacks, or speculation exploits \cite{2017secverilogbl, 2019stt}.
 As the attack model is ever-mutating and often undetected, these solutions can only ever solve part of the problem.
-Some solutions propose generic monitors based on programmable hardware monitors \cite{pump_oakland2015} or languages for describing arbitrary policies \cite{GARUDA, anderson2014netkat}.
-We build on the idea of verifiable policy design and empower \oldname\ to support Speculative and Out-of-Order Processors.
+Some solutions propose generic monitors based on programmable hardware monitors \cite{2014pump} or languages for describing arbitrary policies \cite{2018garuda, 2014netkat}.
+We build on the idea of verifiable policy design and empower \oldname to support Speculative and Out-of-Order Processors.
 The benefits of Speculative and OOP microarchitectures are one of the most significant advancements in recent latency-mitigation research.
-\sysname\ benefits from a refined information model and taint tracking, implemented without changes to the language itself.
+\sysname benefits from a refined information model and taint tracking, implemented without changes to the language itself.
 These additions incur marginal processor overhead, and ring true to the spatial and power efficiency goals of the past.
 We inject monitors into only one part of the processor and automate the comparator for a more streamlined design.
 Finally, we will release this code, compiler, and language on GitHub.
@@ -187,8 +190,175 @@ Finally, we will release this code, compiler, and language on GitHub.
 
 \section{Introduction}
 \sysname Intro
-\cite{gem5_sim}
-\cite{Spec_TT}
+\cite{2011gem5sim}
+\cite{2019stt}
+
+\section {Syntax}
+        
+        % Definitions table
+        \begin{figure}
+          \centering
+          \begin{tabular}{l r c l}
+            Instruction Fields   & $f_{i}$   & $::=$ & $f_{i_{1}} \mid \dots \mid f_{i_{k}}$\\
+            Result Fields   & $f_{r}$   & $::=$ & $f_{r_{1}} \mid \dots \mid f_{r_{k}}$\\
+            Fields          & $f$       & $::=$ & $f_i \mid f_r$ \\
+            Instructions    & $i$       & $::=$ & $\{f_{i_{1}} = v_{i_{1}} ,\ \dots\ ,\ f_{i_{k}} = v_{i_{k}}\}$\\
+            Results         & $r$       & $::=$ & $\{f_{r_{1}} = v_{r_{1}} ,\ \dots\ ,\ f_{r_{k}} = v_{r_{k}}\}$
+          \end{tabular}
+          \caption{Definitions in \oldname.}
+          \label{fig:garuda:defn}
+        \end{figure}
+        
+        % Predicates table
+        \begin{figure}
+          \centering
+          \begin{tabular}{l c r l l}
+            Predicates  & $a,b$ & $::=$  & $0$         & \textit{False}    \\
+                        &       & $\mid$ & $1$         & \textit{Identity} \\
+                        &       & $\mid$ & $f=n$       & \textit{Test}     \\  
+                        &       & $\mid$ & $a + b$     & \textit{Sum}      \\
+                        &       & $\mid$ & $a \cdot b$ & \textit{Product}  \\
+                        &       & $\mid$ & $\neg \ a$  & \textit{Negation}
+          \end{tabular}
+          \caption{Syntax of predicates in \oldname.}
+          \label{fig:garuda:synt:pred}
+        \end{figure}
+        
+        % Policies table
+        \begin{figure}
+          \centering
+          \begin{tabular}{l c r l l}
+            Policies    & $p,q$ & $::=$  & $\mathbf{test}(a)$ & \textit{Test}     \\
+                        &       & $\mid$ & $act(p)$           & \textit{Slice Actions}    \\
+                        &       & $\mid$ & $res(p)$           & \textit{Slice Results}    \\
+                        &       & $\mid$ & $inj_{i}$          & \textit{Injection Action} \\
+                        &       & $\mid$ & $inj_{r}$          & \textit{Injection Result} \\
+                        &       & $\mid$ & $f \leftarrow n$   & \textit{Update}   \\
+                        &       & $\mid$ & $p + q$            & \textit{Choice}   \\
+                        &       & $\mid$ & $p \cdot q$        & \textit{Sequential Concatenation}
+          \end{tabular}
+          \caption{Syntax of policies in \oldname.}
+          \label{fig:garuda:synt:pol}
+        \end{figure}
+        
+\section {Semantics}
+% Semantics of Predicates
+        \begin{figure}
+          \centering
+          \begin{align*}
+            % Theory
+            % TODO: can this be shaded or highlighted in some way?
+            \interp{ \cdot }\ 
+              :\ \ &
+              \mathbf{Stream}(I)\times \mathbf{Stream}(R) \rightarrow \\
+              & P(\mathbf{Stream}(I))\times P(\mathbf{Stream}(R)) 
+              \\
+              \\
+            % Falsity
+            \interp{ 0 }(-, -)
+              \defeq\ &
+              (\emptyset , \emptyset)
+              \\ %or null-stream?
+            % Identity
+            \interp{ 1 }(\mathit{is}, \mathit{rs})
+              \defeq\ &
+              (\{\mathit{is}\},\{\mathit{rs}\})
+              \\
+            % Test
+            \interp{ f=n }(\mathit{is}, \mathit{rs})
+              \defeq\ &
+              (\mathsf{filter}\ (f=n)\ \{\mathit{is}\},\
+               \mathsf{filter}\ (f=n)\ \{\mathit{rs}\}) 
+              \\
+            % Sum
+            \interp{ a + b }(\mathit{is}, \mathit{rs})
+              \defeq\ &
+              \interp { a }(\mathit{is}, \mathit{rs})\cup
+              \interp { b }(\mathit{is}, \mathit{rs}) \\
+              &\mathsf{where}\ (S_i^1, S_r^1)\cup (S_i^2, S_r^2)\defeq
+                (S_i^1\cup S_i^2, S_r^1\cup S_r^2)\\
+            % Product
+            \interp { a \cdot b }(\mathit{is}, \mathit{rs})
+              \defeq\ &
+              \interp { a }(\mathit{is}, \mathit{rs})\cap
+              \interp { b }(\mathit{is}, \mathit{rs}) \\
+              &\mathsf{where}\ (S_i^1, S_r^1)\cap (S_i^2, S_r^2)\defeq
+                (S_i^1\cap S_i^2, S_r^1\cap S_r^2)\\
+            % Negation
+            \interp { \neg a }(\mathit{is}, \mathit{rs})
+              \defeq\ &
+              \mathsf{let}\ (S_i, S_r) = \interp {a}(\mathit{is}, \mathit{rs}) \\
+              &\mathsf{in}\ (\{\mathit{is}\} - S_i, \{\mathit{rs}\} - S_r)
+          \end{align*}
+          \caption{The semantics of predicates in \oldname.}
+          \label{fig:garuda:sem:pred}
+        \end{figure}
+        % Semantics of Policies
+        \begin{figure}
+          \centering
+          \begin{align*}
+            % Theory
+            % TODO: can this be shaded or highlighted in some way?
+            \interp{ \cdot }\ 
+              :\ \ &
+              \mathbf{Stream}(I)\times \mathbf{Stream}(R) \rightarrow \\
+              & P(\mathbf{Stream}(I))\times P(\mathbf{Stream}(R)) 
+              \\
+              \\
+            % Action-only Slice
+            \interp { act(p) }(\mathit{is}, \mathit{rs})
+              \defeq\ &
+              \mathsf{let}\ (S_i,S_r) = \interp {p}(\mathit{is}, \mathit{rs})\ 
+              \mathsf{in}\ (S_i, \{\mathit{rs}\})
+              \\
+            % Result-only Slice
+            \interp { res(p) }(\mathit{is}, \mathit{rs})
+              \defeq\ &
+              \mathsf{let}\ (S_i,S_r) = \interp {p}(\mathit{is}, \mathit{rs})\ 
+              \mathsf{in}\ (\{\mathit{is}\}, S_r)
+              \\
+            % Injection Action
+            \interp { inj_{i}(i) }(\mathit{is}, \mathit{rs})
+              \defeq\ &
+              (\{\mathit{i : is}\}, \{\mathit{rs}\}) 
+              %or ::?  ; is sequential
+              \\
+            % Injection Result
+            \interp { inj_{r}(r) }(\mathit{is}, \mathit{rs})
+              \defeq\ &
+              (\{\mathit{is}\},\{ \mathit{r : rs}\})
+              \\
+            % Modification
+            \interp { f \leftarrow n }(is, rs)
+              \defeq\ &
+              (\mathsf{map}\ (f\leftarrow n)\ \{is\},\
+               \mathsf{map}\ (f\leftarrow n)\ \{rs\})
+              \\ % could use editing?
+            % Policy Union
+            \interp { p + q }(\mathit{is}, \mathit{rs})
+              \defeq\ &
+              \interp { p }(\mathit{is}, \mathit{rs})\cup
+              \interp { q }(\mathit{is}, \mathit{rs}) \\
+              &\mathsf{where}\ (S_i^1, S_r^1)\cup (S_i^2, S_r^2)\defeq
+                (S_i^1\cup S_i^2, S_r^1\cup S_r^2)\\
+              %A union of the streams gives a nondeterministic machine.
+            % Policy Concatnation
+            \interp { p \cdot q }(\mathit{is}, \mathit{rs})
+              \defeq\ &
+              \mathsf{let}\ (S_i, S_r) = \interp{p}(is, rs)\\
+              &\mathsf{in}\ \bigcup \{\interp{q}(\mathit{is}',\mathit{rs}')\ |\ \mathit{is}'\in S_i, \mathit{rs'}\in S_r\}\\
+              \\
+            %Defn. of Filter
+            \interp{\mathsf{filter}\ f}(S)
+              \defeq\ & \{l \in S\ |\ f(l) = \mathsf{true}\}\\
+            %Defn. of Map
+            \interp{\mathsf{map}\ g}(S)
+              \defeq\ &
+              \{ g(l)\ |\ l\in S \}
+          \end{align*}
+          \caption{The semantics of policies in \oldname.}
+          \label{fig:garuda:sem:pol}
+        \end{figure}
 
 %% Omitted: Make sure sections use standard sectioning conventions (\section, \subsepction, \paragraph...)
 

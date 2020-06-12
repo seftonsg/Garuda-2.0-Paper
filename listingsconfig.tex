@@ -1,0 +1,101 @@
+\usepackage{listings}
+% \usepackage{sectsty}
+
+\lstdefinelanguage{myC}{
+  language=C,
+  basicstyle=\ttfamily\singlespacing,
+  showspaces=false,              
+  showstringspaces=false,        
+  showtabs=false,    
+  tabsize=2,                      % sets default tabsize to 2 spaces
+  captionpos=b,                   % sets the caption-position to bottom
+  breaklines=true,                % sets automatic line breaking
+  breakatwhitespace=false,
+  escapeinside={\%*}{*)},        
+  keywordstyle=\bfseries\color{black},    % keyword style
+  numberstyle=\tiny\color{gray},
+%  numbers=left,
+%  frame=single,                  % adds a frame around the code
+%  rulecolor=\color{black},
+%  stepnumber=1,                 
+%  numbersep=5pt,                
+%  backgroundcolor=\color{white}, 
+%  commentstyle=\color{dkgreen},  % comment style
+%  stringstyle=\color{mauve},     % string literal style
+}
+% A version of the above myC, but without singlespacing
+\lstdefinelanguage{myinlineC}{
+  language=myC,
+  basicstyle=\ttfamily
+}
+\renewcommand{\ttdefault}{pcr}    % enables bold monospaced font
+\lstdefinelanguage[x86gasm]{Assembler}[x86masm]{Assembler}{%
+,basicstyle=\ttfamily\singlespacing
+,morekeywords={rax,rbx,rcx,rdx,rip,rdi,rsi,rsp,subq,decl,movq
+              ,movl,xorl,imull,popq,popl,pushl}%
+,morekeywords=[2]{.file,.section,.string,.text,.globl,.cfi_startproc
+                 ,.cfi_def_cfa_offset,.cfi_endproc,.size,.ident}%
+}
+%% \definecolor{cmmtcolor}{named}{DarkGreen}
+\definecolor{cmmtcolor}{named}{OliveGreen}
+\lstdefinelanguage{Coq}{
+,morekeywords={match,end,Definition,Inductive,Lemma,Theorem,Record,
+               Hypothesis,Variable,Section,End,case,of,if,then,else,is,let,in,do,return,with,Extract,Constant,Inlined,Inline,Extraction,Fixpoint,Program,Function,Fix,Class,Local,Output,Input}
+,morecomment=[s]{(*}{*)}
+,keywordstyle=\bfseries\color{MidnightBlue}
+,commentstyle={\color{cmmtcolor}}
+,basicstyle=\sffamily
+,columns=fullflexible
+,numberstyle=\tiny\color{gray}
+,escapeinside={@}{@}
+,literate=
+    {:=}{{$\defeq\;$}}1
+    {<-}{{$\leftarrow\;$}}1
+    {=>}{{$\Rightarrow\;$}}1
+    {->}{{$\rightarrow\;$}}1
+    {<->}{{$\leftrightarrow\;$}}1
+    {<==}{{$\leq\;$}}1
+    {\\/}{{$\vee\;$}}1
+    {/\\}{{$\land\;$}}1
+    {ffun}{{$\mathsf{ffun}$}}1    
+    {fun}{{$\lambda$}}1
+    {forall}{{$\forall$}}1
+    {exists}{{$\exists$}}1
+    {Z}{{$\mathbb{Z}$}}1
+    {Z0}{{$\mathbb{Z}_0$}}1
+    {<=}{{$\leq\;$}}1
+    {>=}{{$\geq\;$}}1
+    {<>}{{$\neq\;$}}1                
+}
+
+%% Verilog
+\definecolor{vgreen}{RGB}{104,180,104}
+\definecolor{vblue}{RGB}{49,49,255}
+\definecolor{vorange}{RGB}{255,143,102}
+
+\lstdefinestyle{verilog-style}
+{
+    language=Verilog,
+    basicstyle=\small\sffamily,
+    keywordstyle=\bfseries\color{MidnightBlue},
+    identifierstyle=\color{black},
+    commentstyle=\color{cmmtcolor},
+    tabsize=8,
+    moredelim=*[s][\colorIndex]{[}{]},
+    literate=*{:}{:}1
+}
+
+\makeatletter
+\newcommand*\@lbracket{[}
+\newcommand*\@rbracket{]}
+\newcommand*\@colon{:}
+\newcommand*\colorIndex{%
+   \edef\@temp{\the\lst@token}%
+        \ifx\@temp\@lbracket \color{black}%
+            \else\ifx\@temp\@rbracket \color{black}%
+                \else\ifx\@temp\@colon \color{black}%
+                    \else \color{vorange}%
+                        \fi\fi\fi
+                        }
+\makeatother
+                        

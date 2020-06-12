@@ -20,13 +20,44 @@
 %% original source files, as listed above, are part of the
 %% same distribution. (The sources need not necessarily be
 %% in the same archive or directory.)
-%%
-%% The first command in your LaTeX source must be the \documentclass command.
-% \documentclass[sigchi]{acmart}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%%%%% PREAMBLE %%%%%%
+%%%%%%%%%%%%%%%%%%%%%%
 \documentclass[sigconf,usenames,dvipsnames,svgnames,table]{acmart}
 
-%% Standard Preamble
-    \usepackage{xspace} % Spacing for sysname
+%% Packages %
+  % Standard Packages %
+    \usepackage{pdfpages} % Including PDFs. See Graphicx for more info
+    \usepackage{amsmath}  % \mvert and other relation symbol
+    \usepackage{amssymb}  % Semantic delta=
+    \usepackage{amsthm}   % \begin{proof} and related sections
+    \usepackage{xspace}   % Spacing for sysname
+    \usepackage{dsfont}   % Fancy set letters
+    \usepackage{xcolor}   % Things that need attention, and listingsconfig
+  % Coding Packages %
+    \include{listingsconfig}
+    \lstset{language=Coq}
+    \usepackage[framemethod=TikZ]{mdframed}
+    \mdfsetup{frametitlealignment=\center}
+  % Figure Packages %
+    \usepackage{caption}  % Captions
+    \usepackage{framed}   % Shaded figures
+    \usepackage{epsfig}   % Import PNG figure
+    \usepackage{stmaryrd} % Semantics [[ and ]]
+  % Extra %
+    % \usepackage{enumitem}
+    % \usepackage{tabularx}
+    % \usepackage{graphicx}
+    % \usepackage{proof}  % To write Proofs (included with amsthm?)
+
+% Custom Definitions %
+\newcommand{\interp}[1]{\llbracket #1 \rrbracket}
+\newcommand{\obf}[1]{#1^\mathbf{o}}
+\def \sysname {\textsc{G2}\xspace}
+\def \oldname {\textsc{GARUDA}\xspace}
+\def \defeq   {\triangleq}
 
 %%
 %% \BibTeX command to typeset BibTeX logo in the docs
@@ -68,12 +99,6 @@
 %% end of the preamble, start of the body of the document source.
 \begin{document}
 
-%%
-%% Custom definitions
-\def \sysname {\textsc{G2}\xspace}
-\def \oldname {\textsc{GARUDA}\xspace}
-\def \defeq   {\triangleq}
-\newcommand{\interp}[1]{\llbracket #1 \rrbracket}
 
 
 %% These commands are for a PROCEEDINGS abstract or paper.

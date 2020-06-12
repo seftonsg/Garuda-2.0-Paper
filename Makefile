@@ -6,13 +6,16 @@
 PROJ = Garuda2.0
 
 all:
-	pdflatex ${PROJ}
-	bibtex   ${PROJ}
-	pdflatex ${PROJ}
-	pdflatex ${PROJ}
+	@pdflatex ${PROJ}
+	@bibtex   ${PROJ}
+	@pdflatex ${PROJ}
+	@pdflatex ${PROJ}
+	@echo Done
 
 clean:
-	rm -rf *.aux *.bbl *.blg *.log
-	
+	@rm -rf *.aux *.bbl *.blg *.log
+	@echo Clean
+
 clean-all: clean
 	rm ${PROJ}.pdf
+	@echo Removed pdf

@@ -251,6 +251,46 @@ Finally, we will release this code, compiler, and language on GitHub.
 %%% END SECTION 1 %%%
 %%% INTRODUCTION  %%%
 %%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% BEGIN SECTION 2 %%%
+%%% PRIOR WORK      %%%
+%%%%%%%%%%%%%%%%%%%%%%%
+  \section{Prior Work}\label{sec:priorwork}
+    \begin{table}
+      \centering
+      \begin{tabular}{|c|l|l|} 
+        \hline
+          & Rumtime Monitors & Compiler Enforcements\\
+        \hline
+          Advantages
+          & - Often programmable 
+            & - Low Overhead \\
+          & - Can trigger exceptions or
+            & - Possible violations detected \\
+          &\quad OS traps &\quad before synthesis \\ 
+          & - Modular, not application  
+            & - Violations during runtime \\
+          &\quad specific &\quad simply fail \\
+          \hline
+          Disadvantages
+          & - Exceptions and traps are slow 
+            & - Static after synthesis \\
+          & - Larger overhead 
+            & - Violation-response is static \\
+          & &\quad and defined at compile time \\
+        \hline
+      \end{tabular}
+      \caption{Comparison of Runtime Monitors and Compile-Time Enforcement.}
+      \label{table:prior:run-vs-comp}
+    \end{table}
+
+%%%%%%%%%%%%%%%%%%%%%
+%%% END SECTION 2 %%%
+%%% PRIOR WORK    %%%
+%%%%%%%%%%%%%%%%%%%%%
+
+  
 %%%%%%%%%%%%%%%%%%%%%%
 %%% BEGIN SECTON X %%%
 %%% SYSTEM SPECS   %%%

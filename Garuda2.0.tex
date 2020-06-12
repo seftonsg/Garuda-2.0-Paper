@@ -292,20 +292,37 @@ Finally, we will release this code, compiler, and language on GitHub.
 
   
 %%%%%%%%%%%%%%%%%%%%%%
-%%% BEGIN SECTON X %%%
+%%% BEGIN SECTON 3 %%%
 %%% SYSTEM SPECS   %%%
 %%%%%%%%%%%%%%%%%%%%%%
-  \section {Syntax}
+  \section{The Implementation of \sysname}\label{sec:spec}
+    % \oldname was initially designed with the goal of making the definitions of security policies available to more users.
+    % Hardware policy enforcement was largely relegated to those who understood hardware and the languages used to describe it.
+    % All of the compiled extensions to Verilog, by definition, require the engineer to have an understanding of Verilog itself.
+    % In addition, the author of a security policy would have a difficult time verifying if that policy functioned as intended.
+    % Does their policy \textit{verifiably} work for all possible cases, or have they missed an edge case that could become the next Spectre or Meltdown~\cite{2018spectre, 2018meltdown}?
+    % \par
   %%%%%%%%%%%%%%%%%%%%%%%%%
-  %%% BEGIN SECTION X.1 %%%
+  %%% BEGIN SECTION 3.1 %%%
   %%% SYSTEM SYNTAX     %%%
   %%%%%%%%%%%%%%%%%%%%%%%%%
     \subsection{Syntax}\label{sec:spec:synt}
+    We start by defining the syntax of \sysname.
+    As our language is derived from KAT, this definition may be familiar to some readers.
     %%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% BEGIN SECTION X.1.1 %%%
     %%% SYSTEM DEFINITIONS  %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Definitions}\label{sec:spec:synt:defn}
+        First we define the equivalents of boolean variables to our language in Figure~\ref{fig:spec:synt:defn}.
+        In the same way a boolean algebra would define a boolean variable to belong to the set $\{0 \mid 1\}$, we define what it means for a variable to be a field, instruction, or result.
+        Generic fields $f$ are defined as either an Instruction Field or a Result Field.
+        Instruction fields are the variables that represent instructions.
+        In a statement \shdtt{$f_{i_{1}} =$ \textbf{ADD} x1 x2 x3}, the \textit{field} would be \shdtt{$f_{i_{1}}$}.
+        Result fields are the same, except they are denoted with an 'r': \shdtt{$f_{r_{1}}$}.
+        Instructions and Results follow a similar convention, and we have already defined one.
+        The string \shdtt{$f_{i_{1}} =$ \textbf{ADD} x1 x2 x3} is an instruction itself, where the machine code is just \shdtt{\textbf{ADD} x1 x2 x3}.
+
         % Definitions table
         \begin{figure}
           \centering
@@ -327,10 +344,19 @@ Finally, we will release this code, compiler, and language on GitHub.
         \end{figure}
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% BEGIN SECTION X.1.2  %%%
+    %%% BEGIN SECTION 3.1.2  %%%
     %%% SYNTAX OF PREDICATES %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Syntax of Predicates}\label{sec:spec:synt:pred}
+        After the variables are defined, we move on to the \textit{Predicates}.
+        The predicate language is how a programmer designs a test.
+        Upon first glance at Figure~\ref{fig:spec:synt:pred}, most viewers may see this as just a representation of a boolean algebra.
+        In fact, as touched upon in Section~\ref{sec:prior:ka:kat}, the predicate language is exactly a boolean algebra.
+        The only potential difference is the \textit{Test} field, which is just a way to turn a field's value into a boolean one.
+        The field \shdtt{$f_i$} is clearly not a boolean variable, but \shdtt{$f_i = f_i$} is\footnote{Most languages see this as an assignment.  In \sysname, assignments are done with the $\leftarrow$.}.
+        Note that we define the variables \shdtt{$a, b$} to be predicate placeholders.
+        These variables are used as a shorthand in our Extended BNF~\cite{ISO14977} specifications.
+        Otherwise, we would have to write \textit{<Predicates>} every time we wanted to reference this type.
         % Predicates table
         \begin{figure}
           \centering
@@ -347,10 +373,39 @@ Finally, we will release this code, compiler, and language on GitHub.
         \end{figure}
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% BEGIN SECTION X.1.3 %%%
+    %%% BEGIN SECTION 3.1.3 %%%
     %%% SYNTAX OF POLICIES  %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Syntax of Policies}\label{sec:spec:synt:pol}
+        \textit{Policies} are quite a bit more complicated than predicates.
+        The policy language is an augmentation of a Kleene algebra, where all the primitives are relevant to the monitor theory presented in Section~\ref{sec:prior:mon}.
+        The formal definition of all these policies are found in Figure ~\ref{fig:spec:synt:pol}.
+        \par
+
+        The \textit{Test} rule is very similar to the same one in Figure~\ref{fig:spec:synt:pred}.
+        It is the \textit{Test} part of a Kleene algebra with tests.
+        Scripting programmers may see this as the equivalent of an \shdtt{if} statement, which is accurate.
+        If the predicate \shdtt{$a$} in \shdtt{$\mathbf{test}(a)$} evaluates to the \textit{Identity}, the equivalent scripting functionality would be a satisfied \shdtt{if} statement.
+        In \oldname, this means that the evaluation of the policy can continue.
+        The actual function of this is explained in far more detail in Section~\ref{sec:spec:sem:pol}.
+        \par
+        
+        \textit{Injection Action} and \textit{Injection Result} are just methods of inserting their respective fields.
+        Say the policy engineer would like to return a zero instead of whatever the actual computed value was, \textit{Injection Result} would be the correct tool.
+        \par
+
+        We come to the final three policy rules, by far the most complex and powerful.
+        \textit{Update}, as briefly mentioned earlier, uses the $\leftarrow$ operator.
+        This rule is analogous to assigning a value to a variable.
+        While this is a simple idea, the implementation of such an action is fairly complex.
+        \textit{Choice} is the policy-equivalent to a predicate \textit{Sum}.
+        When the monitor comes across a choice, both sub-policies must be evaluated in parallel.
+        Either, both, or neither may apply to the current state of the machine.
+        Finally, \textit{Sequential Concatenation} is the way a programmer can assign a series of tests, policies, or otherwise.
+        Our monitor cannot look ahead or to past instructions, but it can keep track of its own state.
+        If the user wanted to create a policy that satisfies whenever a load \textit{and then} a branch occurs, they would use this rule.
+        Simply write two predicates for each test, and then concatenate them with the \shdtt{$\cdot$}.
+
         % Policies table
         \begin{figure}
           \centering

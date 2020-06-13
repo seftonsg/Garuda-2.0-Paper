@@ -54,7 +54,7 @@
                {appendix} % Add appendix to ToC
     % \usepackage{fontenc}
     % \usepackage{setspace} % Set line spacing
-    % \usepackage{soul}     % Set highlight colors
+    \usepackage{soul}     % Set highlight colors
     % \usepackage{tocloft}  % Set up Tables of other things
     % \usepackage{fontspec} % Specify Font
     % \usepackage{ragged2e} % Justification
@@ -64,8 +64,14 @@
     % \usepackage{graphicx}
     % \usepackage{proof}  % To write Proofs (included with amsthm?)
 
+% Custom Colors %
+  % For ``shaded'' environments
+    \definecolor{MyLightGrey}{gray}{.75}
+    \definecolor{shadecolor}{named}{MyLightGrey} 
+
 % Custom Definitions %
   \newcommand{\interp}[1]{\llbracket #1 \rrbracket}
+  \newcommand{\shdtt}[1]{\sethlcolor{MyLightGrey}\texttt{\hl{#1}}}
   \newcommand{\obf}[1]{#1^\mathbf{o}}
   \def \sysname {\textsc{G2}\xspace}
   \def \oldname {\textsc{GARUDA}\xspace}
@@ -302,17 +308,19 @@ Finally, we will release this code, compiler, and language on GitHub.
     % In addition, the author of a security policy would have a difficult time verifying if that policy functioned as intended.
     % Does their policy \textit{verifiably} work for all possible cases, or have they missed an edge case that could become the next Spectre or Meltdown~\cite{2018spectre, 2018meltdown}?
     % \par
-  %%%%%%%%%%%%%%%%%%%%%%%%%
-  %%% BEGIN SECTION 3.1 %%%
-  %%% SYSTEM SYNTAX     %%%
-  %%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% BEGIN SECTION 3.1 %%%
+    %%% SYSTEM SYNTAX     %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%
     \subsection{Syntax}\label{sec:spec:synt}
-    We start by defining the syntax of \sysname.
-    As our language is derived from KAT, this definition may be familiar to some readers.
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% BEGIN SECTION X.1.1 %%%
-    %%% SYSTEM DEFINITIONS  %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%
+      We start by defining the syntax of \sysname.
+      As our language is derived from KAT, this definition may be familiar to some readers.
+   
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%% BEGIN SECTION X.1.1 %%%
+      %%% SYSTEM DEFINITIONS  %%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Definitions}\label{sec:spec:synt:defn}
         First we define the equivalents of boolean variables to our language in Figure~\ref{fig:spec:synt:defn}.
         In the same way a boolean algebra would define a boolean variable to belong to the set $\{0 \mid 1\}$, we define what it means for a variable to be a field, instruction, or result.
@@ -343,10 +351,10 @@ Finally, we will release this code, compiler, and language on GitHub.
           \label{fig:spec:synt:defn}
         \end{figure}
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% BEGIN SECTION 3.1.2  %%%
-    %%% SYNTAX OF PREDICATES %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%% BEGIN SECTION 3.1.2  %%%
+      %%% SYNTAX OF PREDICATES %%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Syntax of Predicates}\label{sec:spec:synt:pred}
         After the variables are defined, we move on to the \textit{Predicates}.
         The predicate language is how a programmer designs a test.
@@ -372,10 +380,10 @@ Finally, we will release this code, compiler, and language on GitHub.
           \label{fig:spec:synt:pred}
         \end{figure}
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% BEGIN SECTION 3.1.3 %%%
-    %%% SYNTAX OF POLICIES  %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%% BEGIN SECTION 3.1.3 %%%
+      %%% SYNTAX OF POLICIES  %%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Syntax of Policies}\label{sec:spec:synt:pol}
         \textit{Policies} are quite a bit more complicated than predicates.
         The policy language is an augmentation of a Kleene algebra, where all the primitives are relevant to the monitor theory presented in Section~\ref{sec:prior:mon}.
@@ -429,15 +437,15 @@ Finally, we will release this code, compiler, and language on GitHub.
 
 
 
-  %%%%%%%%%%%%%%%%%%%%%%%%%
-  %%% BEGIN SECTION X.1 %%%
-  %%% SYSTEM SEMANTICS  %%%
-  %%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% BEGIN SECTION 3.2 %%%
+    %%% SYSTEM SEMANTICS  %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%
     \subsection{Semantics}\label{sec:spec:sem}
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% BEGIN SECTION X.1.1   %%%
-    %%% SEMANTICS: PREDICATES %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%% BEGIN SECTION 3.2.1   %%%
+      %%% SEMANTICS: PREDICATES %%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Semantics of Predicates}\label{sec:spec:sem:pred}
 
         % Semantics of Predicates
@@ -491,10 +499,10 @@ Finally, we will release this code, compiler, and language on GitHub.
           \label{fig:garuda:sem:pol}
         \end{figure}
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% BEGIN SECTION X.1.2 %%%
-    %%% SEMANTICS: POLICIES %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%% BEGIN SECTION 3.2.2 %%%
+      %%% SEMANTICS: POLICIES %%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Semantics of Policies}\label{sec:spec:sem:pol}
         \begin{figure}
           \centering
@@ -557,6 +565,222 @@ Finally, we will release this code, compiler, and language on GitHub.
           \caption{The semantics of policies in \sysname.}
           \label{fig:spec:sem:pol}
         \end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% BEGIN SECTON 4 %%%
+%%% PROOFS         %%%
+%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    %%% BEGIN SECTON 4.0 %%%
+    %%% WHY PROOFS       %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%
+
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    %%% BEGIN SECTON 4.1 %%%
+    %%% NO OBFUSCATION   %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Demonstrate the basic flow of a policy
+
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    %%% BEGIN SECTON 4.2 %%%
+    %%% XOR KEY          %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Demonstrate proofs on converse PhiOps
+
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    %%% BEGIN SECTON 4.3 %%%
+    %%% SOMETHING ABOUT PHI STACKING ??? %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Demonstrate complex policy decision making
+
+
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    %%% BEGIN SECTON 4.1 %%%
+    %%% EXAMPLE ATTACKS  %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Demonstrate a thwarted attack
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%%% BEGIN SECTON 5   %%%
+%%% FULL COMPILATION %%%
+%%%%%%%%%%%%%%%%%%%%%%%%
+  \section{Compilation to Verilog}\label{sec:comp}
+    Label Test: 
+    ~\ref{sec:comp:int}
+    ~\ref{sec:comp:comp}
+    ~\ref{sec:comp:comp:pred}
+    ~\ref{sec:comp:comp:pol}
+    ~\ref{fig:comp:int}
+    ~\ref{tab:comp:comp:ports}
+    ~\ref{fig:comp:comp:pred}
+    ~\ref{fig:comp:comp:pol}
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    %%% BEGIN SECTON 5.1 %%%
+    %%% INTERMEDIATE     %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    \subsection{The Intermediate Language}\label{sec:comp:int}
+
+      \begin{figure}
+        \centering
+        \begin{tabular}{l r r l l}
+          % Definitions table
+          Values        & $v$     & $::=$     & $\mathsf{INSTR\ |\ RES}$ &\\
+          Registers     & $b$     & $::=$     & $\mathsf{reg}$           &\\
+          \\
+          % Predicates table
+          Expressions & $e$ & $::=$  & $read(b)$       
+                            & \textit{Read Reg}\\
+                      &     & $\mid$ & $write(b,v)$    
+                            & \textit{Write Value to Reg}\\
+                      &     & $\mid$ & $let\ x = e_1\ in\ e_2$ 
+                            & \textit{Assignment}\\  
+                      &     & $\mid$ & $e_1\ ||\ e_2$ 
+                            & \textit{Parallel}\\
+                      &     & $\mid$ & $f(e_1)$        
+                            & \textit{Apply Function} \\  
+                      &     & $\mid$ & $if\ v = n\ then\ e_1\ else\ e_2$
+                            & \textit{Conditional} \\
+                      &     & $\mid$ & $e_1\ \&\&\ e_2$ 
+                            & \textit{Product (AND)}\\
+                      &     & $\mid$ & $e_1 ; e_2$
+                            & \textit{Concatenation}\\
+                      &     & $\mid$ & $forever\ e$ 
+                            & \textit{Hardwire}
+        \end{tabular}
+        \caption{The language \sysname uses as a means to facilitate compilation.}
+        \label{fig:comp:int}
+      \end{figure}
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    %%% BEGIN SECTON 5.2 %%%
+    %%% COMPILATION      %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    \subsection{Compiling \sysname to the Intermediate}\label{sec:comp:comp}
+      We define a function $\mathbf{C}$ to be the compilation of some predicate or policy in \sysname to the intermediate language.
+      $\mathbf{C}$ operates on the four ports of the \sysname monitor.
+      These consist of the processing done after the Execution stage, before the Memory stage, and their respective altered streams.
+      Table~\ref{tab:compile:compile:ports} summarizes each port.
+      Assume all $\mathbf{C}$ are short for $\mathbf{C}_{(EXE,\obf{EXE},\obf{MEM},MEM)}$ if unspecified.
+      % Would it be best to flip MEM and MEM' to show the return to the original output of EXE?
+      \begin{table}
+        \centering
+        \begin{tabular}{c | l}
+          PORT        & DESCRIPTION \\ \hline
+          $EXE$       & Direct output of the execution stage. \\
+          $\obf{EXE}$ & Altered state register input. \\
+          $\obf{MEM}$ & Direct output of the state register. \\
+          $MEM$       & Altered memory access input. 
+        \end{tabular}
+        \caption{
+          The four ports used in compilation.
+          These are the inputs and outputs for logic between the functional units and state register.
+        }
+        \label{tab:comp:comp:ports}
+      \end{table}
+
+      %%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%% BEGIN SECTON 5.2.1 %%%
+      %%% PREDICATES         %%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%%
+      \subsubsection{Compiling Predicates}\label{sec:comp:comp:pred}
+        \begin{figure}
+          \begin{align*}
+            % Falsity
+            \mathbf{C}[0]\ 
+              =\ &
+              let\    E\_bog = \text{new buf}\\
+              &\quad\ M\_bog = \text{new buf}\\
+              &in\ write(\obf{EXE}, E\_bog)\\
+              &\quad  write(MEM, M\_bog)\\
+            % Identity
+            \mathbf{C}[1]\ 
+              =\ &
+              write(\obf{EXE}, read(EXE))\\
+              &write(MEM, read(\obf{MEM}))
+              \\
+            % Filter
+            \mathbf{C}[f = n]\
+              =\
+              &if\ EXE=n\ then\\
+              &\quad write(\obf{EXE}, read(EXE))\\
+              &\quad else\ \mathbf{C}_{(EXE, \obf{EXE}, -, -)}[0]\\
+              &if\ \obf{MEM}=n\ then\\
+              &\quad write(MEM, read(\obf{MEM}))\\
+              &\quad else\ \mathbf{C}_{(-, -, \obf{MEM}, MEM)}[0]\\
+            % Predicate Addition
+            \mathbf{C}[\mathsf{test}(a + b)]\ 
+              =\
+              & (*Intermediate\ Execution\ Ports*)\\
+              & let\ E_{ai}, \obf{E}_{ai}, E_{bi}, \obf{E}_{bi} = \text{new buf}\ in\\
+              & (*Intermediate\ Memory\ Ports*)\\
+              & let\ \obf{M}_{ai}, M_{ai}, \obf{M}_{bi}, M_{bi} = \text{new buf}\ in\\
+              &\quad\ \ DeMux(EXE, E_{ai}, E_{bi})\ ||\\
+              &\quad\ \ DeMux(\obf{MEM}, \obf{M}_{ai}, \obf{M}_{bi})\\
+              &let\     i_a = \mathbf{C}_{(E_{ai},\obf{E}_{ai},\obf{M}_{ai},M_{ai})}[a]\\
+              &\quad\ \ i_b = \mathbf{C}_{(E_{bi},\obf{E}_{bi},\obf{M}_{bi},M_{bi})}[b]\\
+              &in\ Mux(i_a\ \ i_b, (\obf{EXE},MEM))\\
+            % Predicate Product
+            \mathbf{C}[\mathsf{test}(a \cdot b)]\ 
+              =\ &\mathbf{C}[\mathsf{test}(a) \cdot \mathsf{test}(b)] \\
+            % Predicate Negation
+            \mathbf{C}[\neg a]\ 
+              =\ 
+              &if\ \neg a\ then\\
+              &\quad write(\obf{EXE}, read(EXE))\\
+              &\quad write(MEM, read(\obf{MEM}))\\
+              &else\ \mathbf{C}[0]\\
+          \end{align*}
+          \caption{
+            Compilation of \sysname predicates into the intermediate language.
+            These remain largely unchanged from \oldname.
+          }
+          \label{fig:comp:comp:pred}
+        \end{figure}
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% BEGIN SECTON 5.2.2 %%%
+    %%% POLICIES           %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
+      \subsubsection{Compiling Policies}\label{sec:comp:comp:pol}
+        \begin{figure}
+          \begin{align*}
+            % Inject Instruction
+            \mathbf{C}[inj_{SR}V]\ 
+              =\ &
+              write(\obf{EXE}, V)\\
+            % Inject Result
+            \mathbf{C}[inj_{Mi}V]\ 
+              =\ &
+              write(MEM, V)\\
+            % Assignment
+            \mathbf{C}[f \leftarrow n]\ 
+              =\ &
+              let\    e' = f(read(EXE))\\
+              &\quad\ m' = f(read(\obf{MEM}))\\
+              &in\ write(\obf{EXE}, e')\\
+              &\quad \ write(MEM, m')\\
+            % Policy Nondeterministic Choice
+            \mathbf{C}[p + q]\ 
+              =\ &
+              let\      e_p = \mathbf{C}[p]\\
+              &\quad\ \ e_q = \mathbf{C}[q]\\
+              &in\ Mux(e_p, e_q, (\obf{EXE},MEM))\\
+            % Policy Sequence
+            \mathbf{C}[p \cdot q]\ 
+              =\ &
+              let\    EXE_{mid} = \text{new buf}\\
+              &\quad\ MEM_{mid} = \text{new buf}\\
+              &\quad\ \ e_p = \mathbf{C}_{( EXE, EXE_{mid}, \obf{MEM}, MEM_{mid}      )}[p]\\
+              &\quad\ \ e_q = \mathbf{C}_{(      EXE_{mid}, \obf{EXE}, MEM_{mid}, MEM )}[q]\\
+              &in\ e_p\ ;\ e_q
+          \end{align*}
+          \caption{Compilation of \sysname policies into the intermediate language.}
+          \label{fig:comp:comp:pol}
+        \end{figure}
+
+
+
+
+
 %%
 %% The acknowledgments section is defined using the "acks" environment
 %% (and NOT an unnumbered section). This ensures the proper

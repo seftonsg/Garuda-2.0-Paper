@@ -418,18 +418,17 @@ Finally, we will release this code, compiler, and language on GitHub.
         \begin{figure}
           \centering
           \begin{tabular}{l c r l l}
-            Policies  & $p,q$ & $::=$  & $\mathbf{test}(a)$ & \textit{Test}      \\
-                      &       & $\mid$ & $(\Phi_{Encrypt}, 
-                                           \Phi_{Decrypt})$ & \textit{Obfuscation} \\
-                      &       & $\mid$ & $inj_{SR}$         & \textit{Injection to State Register} \\
-                      % alternatively: Injection to State Register (inj_{i})
-                      %   should I make this Rs?  That could be confused with the rs in MIPS, 
-                      %   ... but we already used rs in GARUDA without problem
-                      &       & $\mid$ & $inj_{Mi}$         & \textit{Injection to Memory Unit} \\
-                      % alternatively: Injection from State Register (inj_{o})
-                      &       & $\mid$ & $f \leftarrow n$   & \textit{Update}   \\
-                      &       & $\mid$ & $p + q$            & \textit{Choice}   \\
-                      &       & $\mid$ & $p \cdot q$        & \textit{Sequential Concatenation} \\
+            Policies  & $p,q$ & $::=$  & $\mathbf{test}(a)$ & \textit{Test}           \\
+                      &       & $\mid$ & $(\Phi_{Encrypt},$ &                         \\
+                      &       &        &\ $\Phi_{Decrypt})$ & \textit{Obfuscation}    \\
+                      &       & $\mid$ & $inj_{Rs}$         & \textit{Injection to}   \\
+                      &       &        &                    & \textit{State Register} \\
+                      &       & $\mid$ & $inj_{Mi}$         & \textit{Inject to}      \\
+                      &       &        &                    & \textit{Memory Unit}    \\
+                      &       & $\mid$ & $f \leftarrow n$   & \textit{Update}         \\
+                      &       & $\mid$ & $p + q$            & \textit{Choice}         \\
+                      &       & $\mid$ & $p \cdot q$        & \textit{Sequential}     \\
+                      &       &        &                    & \textit{Concatenation}  \\
           \end{tabular}
           \caption{Syntax of Policies in \sysname}
           \label{fig:spec:synt:pol}
@@ -471,22 +470,26 @@ Finally, we will release this code, compiler, and language on GitHub.
             % Test
             \interp{ f=n }(es, ms)
               \triangleq\ &
-              (\mathsf{filter}\ (f=n)\ \{es\},\
-               \mathsf{filter}\ (f=n)\ \{ms\}) 
+                (\mathsf{filter}\ (f=n)\ \{es\},\\
+              &\ \mathsf{filter}\ (f=n)\ \{ms\}) 
               \\
             % Sum
             \interp{ a + b }(es, ms)
               \triangleq\ &
               \interp { a }(es, ms)\cup
               \interp { b }(es, ms) \\
-              &\mathsf{where}\ (S_e^1, S_m^1)\cup (S_e^2, S_m^2)\triangleq
+              &\mathsf{where}\ 
+                (S_e^1, S_m^1)\cup (S_e^2, S_m^2)\triangleq\\
+                &\quad\quad\ \ \ 
                 (S_e^1\cup S_e^2, S_m^1\cup S_m^2)\\
             % Product
             \interp { a \cdot b }(es, ms)
               \triangleq\ &
               \interp { a }(es, ms)\cap
               \interp { b }(es, ms) \\
-              &\mathsf{where}\ (S_e^1, S_m^1)\cap (S_e^2, S_m^2)\triangleq
+              &\mathsf{where}\ 
+                (S_e^1, S_m^1)\cap (S_e^2, S_m^2)\triangleq\\
+                &\quad\quad\ \ \ 
                 (S_e^1\cap S_e^2, S_m^1\cap S_m^2)\\
             % Negation
             \interp { \neg a }(es, ms)
@@ -514,10 +517,10 @@ Finally, we will release this code, compiler, and language on GitHub.
               & P(\mathbf{Stream}(E))\times P(\mathbf{Stream}(M)) 
               \\
             % Obfuscation
-            \interp {(\Phi_{Encrypt}, \Phi_{Decrypt})}(es, ms)\
+            \interp {(\Phi_{En}, \Phi_{De})}(es, ms)\
               \triangleq\
-              & \mathsf{let}\ (e \rightarrow \obf{e} = \Phi_{Encrypt}),
-                            \ (\obf{m} \rightarrow m = \Phi_{Decrypt})\\
+              & \mathsf{let}\ (e \rightarrow \obf{e} = \Phi_{En}),\\
+              & \quad\ \      (\obf{m} \rightarrow m = \Phi_{De}) \\
               % & \mathsf{let}\ e \rightarrow \obf{e} = \Phi_{Encrypt}\\
               % & \mathsf{and}\ \obf{m} \rightarrow m = \Phi_{Decrypt}\\
               & \mathsf{in}\
@@ -536,17 +539,17 @@ Finally, we will release this code, compiler, and language on GitHub.
               \\
             % Modification
             \interp { f \leftarrow n }(es, ms)
-              \triangleq\ &
-              (\mathsf{map}\ (f\leftarrow n)\ \{e\},\
-               \mathsf{map}\ (f\leftarrow n)\ \{m\})
+              \triangleq\ 
+              & (\mathsf{map}\ (f\leftarrow n)\ \{e\},\\
+              &\ \mathsf{map}\ (f\leftarrow n)\ \{m\})
               \\ %  could use editing?
             % Policy Union
             \interp { p + q }(es, ms)
               \triangleq\ &
               \interp { p }(e, m)\cup
               \interp { q }(e, m) \\
-              &\mathsf{where}\ (S_e^1, S_m^1)\cup (S_e^2, S_m^2)\triangleq
-                (S_e^1\cup S_e^2, S_m^1\cup S_m^2)\\
+              &\mathsf{where}\ (S_e^1, S_m^1)\cup (S_e^2, S_m^2)\triangleq\\
+              &\quad\quad\quad (S_e^1\cup S_e^2, S_m^1\cup S_m^2)\\
               % A union of the streams gives a nondeterministic machine.
             % Policy Concatnation
             \interp { p \cdot q }(es, ms)
@@ -570,6 +573,7 @@ Finally, we will release this code, compiler, and language on GitHub.
 %%% BEGIN SECTON 4 %%%
 %%% PROOFS         %%%
 %%%%%%%%%%%%%%%%%%%%%%
+  \section{TODO: Name: Proofs}\label{sec:proofs}
     %%%%%%%%%%%%%%%%%%%%%%%%
     %%% BEGIN SECTON 4.0 %%%
     %%% WHY PROOFS       %%%

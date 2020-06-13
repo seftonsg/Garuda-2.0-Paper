@@ -44,7 +44,7 @@
   % Figure Packages %
     \usepackage{caption}  % Captions
     \usepackage{framed}   % Shaded figures
-    \usepackage{epsfig}   % Import PNG figure
+    % \usepackage{epsfig}   % Import PNG figure
     \usepackage{stmaryrd} % Semantics [[ and ]]
   % Specific Thesis Packages %
     \usepackage{contour}
@@ -418,18 +418,17 @@ Finally, we will release this code, compiler, and language on GitHub.
         \begin{figure}
           \centering
           \begin{tabular}{l c r l l}
-            Policies  & $p,q$ & $::=$  & $\mathbf{test}(a)$ & \textit{Test}      \\
-                      &       & $\mid$ & $(\Phi_{Encrypt}, 
-                                           \Phi_{Decrypt})$ & \textit{Obfuscation} \\
-                      &       & $\mid$ & $inj_{SR}$         & \textit{Injection to State Register} \\
-                      % alternatively: Injection to State Register (inj_{i})
-                      %   should I make this Rs?  That could be confused with the rs in MIPS, 
-                      %   ... but we already used rs in GARUDA without problem
-                      &       & $\mid$ & $inj_{Mi}$         & \textit{Injection to Memory Unit} \\
-                      % alternatively: Injection from State Register (inj_{o})
-                      &       & $\mid$ & $f \leftarrow n$   & \textit{Update}   \\
-                      &       & $\mid$ & $p + q$            & \textit{Choice}   \\
-                      &       & $\mid$ & $p \cdot q$        & \textit{Sequential Concatenation} \\
+            Policies  & $p,q$ & $::=$  & $\mathbf{test}(a)$ & \textit{Test}           \\
+                      &       & $\mid$ & $(\Phi_{Encrypt},$ &                         \\
+                      &       &        &\ $\Phi_{Decrypt})$ & \textit{Obfuscation}    \\
+                      &       & $\mid$ & $inj_{Rs}$         & \textit{Injection to}   \\
+                      &       &        &                    & \textit{State Register} \\
+                      &       & $\mid$ & $inj_{Mi}$         & \textit{Inject to}      \\
+                      &       &        &                    & \textit{Memory Unit}    \\
+                      &       & $\mid$ & $f \leftarrow n$   & \textit{Update}         \\
+                      &       & $\mid$ & $p + q$            & \textit{Choice}         \\
+                      &       & $\mid$ & $p \cdot q$        & \textit{Sequential}     \\
+                      &       &        &                    & \textit{Concatenation}  \\
           \end{tabular}
           \caption{Syntax of Policies in \sysname}
           \label{fig:spec:synt:pol}
@@ -442,6 +441,52 @@ Finally, we will release this code, compiler, and language on GitHub.
     %%% SYSTEM SEMANTICS  %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%
     \subsection{Semantics}\label{sec:spec:sem}
+      Here we define what each of the syntactic rules described above actually mean.
+      In effect, this is a translation of the language into what the monitor can do for any given input.
+      As mentioned, we have a monitor that operates on two streams.
+      To visualize a machine that operates on streams, the analogy of an older dot-matrix printer can be used.
+      Many of my readers may not be familiar with this technology, so I provide a simplified version of this kind of printer in Figure~\ref{fig:spec:sem:sprint}.
+      With these kinds of printers, the paper comes perforated between every page.
+      All of the pages are connected and the stack is folded in a zig-zag.
+      There are guides on the sides of the papers, which act as their margins and assist the printer in moving the paper through its system.
+      The important thing to note about these kinds of printers is that they are continuous; there is always a stream of non-interruptable inputs \footnote{For simplicity, assume an infinite spool of this paper}.
+      This printer is a useful analogy of a single-stream machine.
+      \par
+
+      If we bring the context back to \oldname, we must use Figure~\ref{fig:spec:sem:dprint}.
+      This image depicts a printer with two streams of paper, with the outputs for each on opposite sides.
+      \oldname operates in this way, and I have labeled the instruction and result streams accordingly.
+      The blank paper feeding into the input side of this printer can be thought of as the instructions being sent to the CPU.
+      \oldname is given an opportunity to modify, or ``print'' on, this stream.
+      The inputs stream exits the printer, is processed by the CPU, and returns the results stream.
+      This stream can be modified as well by the exact same device that also processed the inputs.
+      Unifying the input and output processing in this way means that communication, and thus decision making, is easier for complex stream processing.
+      \par
+
+      For how the \textit{language} of \oldname works, we have to refer to the theory of regular expressive languages from Section~\ref{sec:prior:ka:star}.
+      Recall that a regular expression, when compiled, returns a set of all possible satisfying strings.
+      For our purposes, we don't just look at satisfactory strings, but satisfactory \textit{streams} of strings.
+      We represent these streams as a set of all possible combinations of inputs.
+      Processing a regular expression over a standard alphabet of characters produces strings, but our input is no longer an alphabet of characters.
+      A regular expression that accepts all strings returns the \textit{Power Set} of the input alphabet.
+      Indeed, you can see in Figure~\ref{fig:spec:sem:pred} that the first entry is what the interpretation operator \shdtt{$\interp{\cdot}$}
+      \footnote{The dot seen in the middle of the \shdtt{$\interp{}$} operator acts as a placeholder.
+      In this case, it is NOT a Sequential Concatenation.} means.
+      A similar policy that accepts all possible inputs returns the power set of the input and output streams \shdtt{$P(\mathbf{Stream}(E))\times P(\mathbf{Stream}(M))$}.
+
+      \begin{figure}
+        \centering
+        \includegraphics[width=0.4\textwidth]{sprint.png}
+        \caption{An older, continuous feed printer.}
+        \label{fig:spec:sem:sprint}
+      \end{figure}
+
+      \begin{figure}
+        \centering
+        \includegraphics[width=0.4\textwidth]{sprint.png}
+        \caption{The monitor used in \oldname, demonstrated as a printer operating on two continuous feeds of paper.}
+        \label{fig:spec:sem:dprint}
+      \end{figure}
       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       %%% BEGIN SECTION 3.2.1   %%%
       %%% SEMANTICS: PREDICATES %%%
@@ -451,13 +496,14 @@ Finally, we will release this code, compiler, and language on GitHub.
         % Semantics of Predicates
         \begin{figure}
           \centering
+          { %\fontsize{8pt}{10pt}
           \begin{align*}
             % Theory
             \interp{ \cdot }\ 
               :\ \ &
               \mathbf{Stream}(E)\times \mathbf{Stream}(M) \rightarrow \\
               & P(\mathbf{Stream}(E))\times P(\mathbf{Stream}(M)) 
-              \\
+              \\\hline
             % Falsity
             \interp{ 0 }(-, -)
               \triangleq\ &
@@ -471,22 +517,26 @@ Finally, we will release this code, compiler, and language on GitHub.
             % Test
             \interp{ f=n }(es, ms)
               \triangleq\ &
-              (\mathsf{filter}\ (f=n)\ \{es\},\
-               \mathsf{filter}\ (f=n)\ \{ms\}) 
+                (\mathsf{filter}\ (f=n)\ \{es\},\\
+              &\ \mathsf{filter}\ (f=n)\ \{ms\}) 
               \\
             % Sum
             \interp{ a + b }(es, ms)
               \triangleq\ &
               \interp { a }(es, ms)\cup
               \interp { b }(es, ms) \\
-              &\mathsf{where}\ (S_e^1, S_m^1)\cup (S_e^2, S_m^2)\triangleq
+              &\mathsf{where}\ 
+                (S_e^1, S_m^1)\cup (S_e^2, S_m^2)\triangleq\\
+                &\quad\quad\ \ \ 
                 (S_e^1\cup S_e^2, S_m^1\cup S_m^2)\\
             % Product
             \interp { a \cdot b }(es, ms)
               \triangleq\ &
               \interp { a }(es, ms)\cap
               \interp { b }(es, ms) \\
-              &\mathsf{where}\ (S_e^1, S_m^1)\cap (S_e^2, S_m^2)\triangleq
+              &\mathsf{where}\ 
+                (S_e^1, S_m^1)\cap (S_e^2, S_m^2)\triangleq\\
+                &\quad\quad\ \ \ 
                 (S_e^1\cap S_e^2, S_m^1\cap S_m^2)\\
             % Negation
             \interp { \neg a }(es, ms)
@@ -494,9 +544,9 @@ Finally, we will release this code, compiler, and language on GitHub.
               \mathsf{let}\ (S_e, S_m) = \interp {a}(es, ms) \\
               &\mathsf{in}\ (\{es\} - S_e, \{ms\} - S_m)
               \\
-          \end{align*}
+          \end{align*}}
           \caption{The semantics of predicates in \sysname.  While predicates remain unchanged from \oldname, the theory changes slightly}
-          \label{fig:garuda:sem:pol}
+          \label{fig:spec:sem:pol}
         \end{figure}
 
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -506,18 +556,19 @@ Finally, we will release this code, compiler, and language on GitHub.
       \subsubsection{Semantics of Policies}\label{sec:spec:sem:pol}
         \begin{figure}
           \centering
-          \begin{align*} 
+          { %\fontsize{8}{10}
+          \begin{align*}
             % Theory
             \interp { \cdot }\ 
               :\ \ &
               \mathbf{Stream}(E)\times \mathbf{Stream}(M) \rightarrow \\
               & P(\mathbf{Stream}(E))\times P(\mathbf{Stream}(M)) 
-              \\
+              \\\hline
             % Obfuscation
-            \interp {(\Phi_{Encrypt}, \Phi_{Decrypt})}(es, ms)\
+            \interp {(\Phi_{En}, \Phi_{De})}(es, ms)\
               \triangleq\
-              & \mathsf{let}\ (e \rightarrow \obf{e} = \Phi_{Encrypt}),
-                            \ (\obf{m} \rightarrow m = \Phi_{Decrypt})\\
+              & \mathsf{let}\ (e \rightarrow \obf{e} = \Phi_{En}),\\
+              & \quad\ \      (\obf{m} \rightarrow m = \Phi_{De}) \\
               % & \mathsf{let}\ e \rightarrow \obf{e} = \Phi_{Encrypt}\\
               % & \mathsf{and}\ \obf{m} \rightarrow m = \Phi_{Decrypt}\\
               & \mathsf{in}\
@@ -536,24 +587,25 @@ Finally, we will release this code, compiler, and language on GitHub.
               \\
             % Modification
             \interp { f \leftarrow n }(es, ms)
-              \triangleq\ &
-              (\mathsf{map}\ (f\leftarrow n)\ \{e\},\
-               \mathsf{map}\ (f\leftarrow n)\ \{m\})
+              \triangleq\ 
+              & (\mathsf{map}\ (f\leftarrow n)\ \{e\},\\
+              &\ \mathsf{map}\ (f\leftarrow n)\ \{m\})
               \\ %  could use editing?
             % Policy Union
             \interp { p + q }(es, ms)
               \triangleq\ &
               \interp { p }(e, m)\cup
               \interp { q }(e, m) \\
-              &\mathsf{where}\ (S_e^1, S_m^1)\cup (S_e^2, S_m^2)\triangleq
-                (S_e^1\cup S_e^2, S_m^1\cup S_m^2)\\
+              &\mathsf{where}\ (S_e^1, S_m^1)\cup (S_e^2, S_m^2)\triangleq\\
+              &\quad\quad\quad (S_e^1\cup S_e^2, S_m^1\cup S_m^2)\\
               % A union of the streams gives a nondeterministic machine.
             % Policy Concatnation
             \interp { p \cdot q }(es, ms)
               \triangleq\ &
               \mathsf{let}\ (S_e, S_m) = \interp{p}(e, m)\\
               &\mathsf{in}\ \bigcup \{\interp{q}(e',m')\ |\ e'\in S_e, m'\in S_m\}\\
-              \\
+              % \\
+              \hline
             % Defn. of Filter
             \interp{\mathsf{filter}\ f}(S)
               \triangleq\ & \{l \in S\ |\ f(l) = \mathsf{true}\}\\
@@ -561,7 +613,7 @@ Finally, we will release this code, compiler, and language on GitHub.
             \interp{\mathsf{map}\ g}(S)
               \triangleq\ &
               \{ g(l)\ |\ l\in S \} 
-          \end{align*}
+          \end{align*}}
           \caption{The semantics of policies in \sysname.}
           \label{fig:spec:sem:pol}
         \end{figure}
@@ -570,6 +622,7 @@ Finally, we will release this code, compiler, and language on GitHub.
 %%% BEGIN SECTON 4 %%%
 %%% PROOFS         %%%
 %%%%%%%%%%%%%%%%%%%%%%
+  \section{TODO: Name: Proofs}\label{sec:proofs}
     %%%%%%%%%%%%%%%%%%%%%%%%
     %%% BEGIN SECTON 4.0 %%%
     %%% WHY PROOFS       %%%

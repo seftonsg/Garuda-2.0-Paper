@@ -54,7 +54,7 @@
                {appendix} % Add appendix to ToC
     % \usepackage{fontenc}
     % \usepackage{setspace} % Set line spacing
-    % \usepackage{soul}     % Set highlight colors
+    \usepackage{soul}     % Set highlight colors
     % \usepackage{tocloft}  % Set up Tables of other things
     % \usepackage{fontspec} % Specify Font
     % \usepackage{ragged2e} % Justification
@@ -64,8 +64,14 @@
     % \usepackage{graphicx}
     % \usepackage{proof}  % To write Proofs (included with amsthm?)
 
+% Custom Colors %
+  % For ``shaded'' environments
+    \definecolor{MyLightGrey}{gray}{.75}
+    \definecolor{shadecolor}{named}{MyLightGrey} 
+
 % Custom Definitions %
   \newcommand{\interp}[1]{\llbracket #1 \rrbracket}
+  \newcommand{\shdtt}[1]{\sethlcolor{MyLightGrey}\texttt{\hl{#1}}}
   \newcommand{\obf}[1]{#1^\mathbf{o}}
   \def \sysname {\textsc{G2}\xspace}
   \def \oldname {\textsc{GARUDA}\xspace}
@@ -600,6 +606,14 @@ Finally, we will release this code, compiler, and language on GitHub.
 %%%%%%%%%%%%%%%%%%%%%%%%
   \section{Compilation to Verilog}\label{sec:comp}
     Label Test: 
+    ~\ref{sec:comp:int}
+    ~\ref{sec:comp:comp}
+    ~\ref{sec:comp:comp:pred}
+    ~\ref{sec:comp:comp:pol}
+    ~\ref{fig:comp:int}
+    ~\ref{tab:comp:comp:ports}
+    ~\ref{fig:comp:comp:pred}
+    ~\ref{fig:comp:comp:pol}
     %%%%%%%%%%%%%%%%%%%%%%%%
     %%% BEGIN SECTON 5.1 %%%
     %%% INTERMEDIATE     %%%

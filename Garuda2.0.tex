@@ -496,13 +496,14 @@ Finally, we will release this code, compiler, and language on GitHub.
         % Semantics of Predicates
         \begin{figure}
           \centering
+          { %\fontsize{8pt}{10pt}
           \begin{align*}
             % Theory
             \interp{ \cdot }\ 
               :\ \ &
               \mathbf{Stream}(E)\times \mathbf{Stream}(M) \rightarrow \\
               & P(\mathbf{Stream}(E))\times P(\mathbf{Stream}(M)) 
-              \\
+              \\\hline
             % Falsity
             \interp{ 0 }(-, -)
               \triangleq\ &
@@ -555,13 +556,14 @@ Finally, we will release this code, compiler, and language on GitHub.
       \subsubsection{Semantics of Policies}\label{sec:spec:sem:pol}
         \begin{figure}
           \centering
-          \begin{align*} 
+          { %\fontsize{8}{10}
+          \begin{align*}
             % Theory
             \interp { \cdot }\ 
               :\ \ &
               \mathbf{Stream}(E)\times \mathbf{Stream}(M) \rightarrow \\
               & P(\mathbf{Stream}(E))\times P(\mathbf{Stream}(M)) 
-              \\
+              \\\hline
             % Obfuscation
             \interp {(\Phi_{En}, \Phi_{De})}(es, ms)\
               \triangleq\
@@ -602,7 +604,8 @@ Finally, we will release this code, compiler, and language on GitHub.
               \triangleq\ &
               \mathsf{let}\ (S_e, S_m) = \interp{p}(e, m)\\
               &\mathsf{in}\ \bigcup \{\interp{q}(e',m')\ |\ e'\in S_e, m'\in S_m\}\\
-              \\
+              % \\
+              \hline
             % Defn. of Filter
             \interp{\mathsf{filter}\ f}(S)
               \triangleq\ & \{l \in S\ |\ f(l) = \mathsf{true}\}\\
@@ -610,7 +613,7 @@ Finally, we will release this code, compiler, and language on GitHub.
             \interp{\mathsf{map}\ g}(S)
               \triangleq\ &
               \{ g(l)\ |\ l\in S \} 
-          \end{align*}
+          \end{align*}}
           \caption{The semantics of policies in \sysname.}
           \label{fig:spec:sem:pol}
         \end{figure}

@@ -395,7 +395,7 @@ Finally, we will release this code, compiler, and language on GitHub.
         I recommend looking at Figure 2 of their paper to get a better idea of how to code using these nesting and parameterizing features.
 
       \subsubsection{Sapper}\label{sec:prior:csbl:s}
-        \textit{Sapper}~\cite{2014sapper} is an improvement on \textit{Caisson}, largely composed by the same authors.
+        An improvement on \textit{Caisson}, \textit{Sapper}~\cite{2014sapper} is largely composed by the same authors.
         The main contribution of this paper is that registers and wires can be connected to the security levels as well.
         They also provide an in-depth description of the type-checking in their compiler.
         Taint tracking is much easier to implement in \textit{Sapper} than in their previous work, so they demonstrate their additions with this example.
@@ -476,7 +476,7 @@ Finally, we will release this code, compiler, and language on GitHub.
 %%% BEGIN SECTON 3 %%%
 %%% SYSTEM SPECS   %%%
 %%%%%%%%%%%%%%%%%%%%%%
-  % \section{The Implementation of \sysname}\label{sec:spec}
+  \section{The Implementation of \sysname}\label{sec:spec}
   %   \sysname was initially designed with the goal of making the definitions of security policies available to more users.
   %   Hardware policy enforcement was largely relegated to those who understood hardware and the languages used to describe it.
   %   All of the compiled extensions to Verilog, by definition, require the engineer to have an understanding of Verilog itself.
@@ -511,7 +511,7 @@ Finally, we will release this code, compiler, and language on GitHub.
    
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       %%% BEGIN 2SUBSEC 3.1.1 %%%
-      %%% SYSTEM SYNTAX DEFNS %%%
+      %%% SYNTAX: DEFINITIONS %%%
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Definitions}\label{sec:spec:synt:defn}
         First we define the equivalents of boolean variables to our language in Figure~\ref{fig:spec:synt:defn}.
@@ -545,7 +545,7 @@ Finally, we will release this code, compiler, and language on GitHub.
 
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       %%% BEGIN 2SUBSEC 3.1.2 %%%
-      %%% SYSTEM SYNTAX PREDS %%%
+      %%% SYNTAX: PREDICATES  %%%
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Syntax of Predicates}\label{sec:spec:synt:pred}
         After the variables are defined, we move on to the \textit{Predicates}.
@@ -575,7 +575,7 @@ Finally, we will release this code, compiler, and language on GitHub.
 
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       %%% BEGIN 2SUBSEC 3.1.3 %%%
-      %%% SYSTEM SYNTAX POLS  %%%
+      %%% SYNTAX: POLICIES    %%%
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Syntax of Policies}\label{sec:spec:synt:pol}
         \textit{Policies} are quite a bit more complicated than predicates.
@@ -648,17 +648,17 @@ Finally, we will release this code, compiler, and language on GitHub.
       This printer is a useful analogy of a single-stream machine.
       \par
 
-      If we bring the context back to \oldname, we must use Figure~\ref{fig:spec:sem:dprint}.
+      If we bring the context back to \sysname, we must use Figure~\ref{fig:spec:sem:dprint}.
       This image depicts a printer with two streams of paper, with the outputs for each on opposite sides.
-      \oldname operates in this way, and I have labeled the instruction and result streams accordingly.
+      \sysname operates in this way, and I have labeled the instruction and result streams accordingly.
       The blank paper feeding into the input side of this printer can be thought of as the instructions being sent to the CPU.
-      \oldname is given an opportunity to modify, or ``print'' on, this stream.
+      \sysname is given an opportunity to modify, or ``print'' on, this stream.
       The inputs stream exits the printer, is processed by the CPU, and returns the results stream.
       This stream can be modified as well by the exact same device that also processed the inputs.
       Unifying the input and output processing in this way means that communication, and thus decision making, is easier for complex stream processing.
       \par
 
-      For how the \textit{language} of \oldname works, we have to refer to the theory of regular expressive languages from Section~\ref{sec:prior:ka:star}.
+      For how the \textit{language} of \sysname works, we have to refer to the theory of regular expressive languages from Section~\ref{sec:prior:ka:star}.
       Recall that a regular expression, when compiled, returns a set of all possible satisfying strings.
       For our purposes, we don't just look at satisfactory strings, but satisfactory \textit{streams} of strings.
       We represent these streams as a set of all possible combinations of inputs.
@@ -666,7 +666,7 @@ Finally, we will release this code, compiler, and language on GitHub.
       A regular expression that accepts all strings returns the \textit{Power Set} of the input alphabet.
       Indeed, you can see in Figure~\ref{fig:spec:sem:pred} that the first entry is what the interpretation operator \shdtt{$\interp{\cdot}$}
       \footnote{The dot seen in the middle of the \shdtt{$\interp{}$} operator acts as a placeholder.
-      In this case, it is NOT a Sequential Concatenation.} means.
+      In this case, it is \textit{not} a Sequential Concatenation.} means.
       A similar policy that accepts all possible inputs returns the power set of the input and output streams \shdtt{$P(\mathbf{Stream}(E))\times P(\mathbf{Stream}(M))$}.
 
       % \begin{figure}
@@ -682,11 +682,52 @@ Finally, we will release this code, compiler, and language on GitHub.
       %   \caption{The monitor used in \oldname, demonstrated as a printer operating on two continuous feeds of paper.}
       %   \label{fig:spec:sem:dprint}
       % \end{figure}
+
       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      %%% BEGIN SECTION 3.2.1   %%%
+      %%% BEGIN 2SUBSEC 3.2.1   %%%
       %%% SEMANTICS: PREDICATES %%%
       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Semantics of Predicates}\label{sec:spec:sem:pred}
+        In this section, we will study just the Semantics of the predicates.
+        Please refer to Figure~\ref{fig:spec:sem:pred} for the mathematical definitions.
+        Note that the \shdtt{$\defeq$} symbol means \textit{``is defined to be equal to''}.
+        So, \shdtt{$\interp{abc}\defeq jkl$} can be read as \textit{``The interpretation of abc is definitionally equivalent to jkl''}.
+        Also, the term \textit{ins} in this section refers to when either stream enters the monitor.
+        This is not to be confused with the actual \textit{instruction} stream, which becomes relevant when we discuss the policies in Section~\ref{sec:spec:sem:pol}.
+
+        \paragraph{Falsity:}
+          \shdtt{$\interp{ 0 }(-, -)$} \par
+          The falsity predicate simply returns nothing.
+          There are no possible ins that can satisfy a policy of this nature.
+
+        \paragraph{Identity:}
+          \shdtt{$\interp{ 1 }(\mathit{is}, \mathit{rs})$} \par
+          The identity is satisfied by every possible input, and therefore returns everything.
+          Any instructions or results sent through this monitor pass through completely unaltered.
+
+        \paragraph{Test}
+          \shdtt{$\interp{ f=n }(\mathit{is}, \mathit{rs})$} \par
+          The test predicate is satisfied like an \shdtt{if} statement.
+          Whenever this statement is satisfied, the policy composed of a test is also satisfied.
+          Therefore, a monitor with a test lets all ins pass through which satisfy the given test.
+        
+        \paragraph{Sum}
+          \shdtt{$\interp{ a + b }(\mathit{is}, \mathit{rs})$} \par
+          The sum predicate operates in the same way as the boolean operator.
+          For any policy summing two predicates, the inputs that satisfy a, b, or a \textit{and} b are considered to satisfy the entire predicate.
+          These ins are passed through the monitor unchanged.
+ 
+        \paragraph{Product}
+          \shdtt{$\interp { a \cdot b }(\mathit{is}, \mathit{rs})$} \par
+          As with the sum predicate, the product operator acts like its boolean equivalent.
+          Whenever both a \textit{and} b are satisfied, the policy is satisfied.
+          Ins which satisfy both a and b are passed through the monitor, while all others are simply destroyed\footnote{It may not be entirely accurate to say these ins are destroyed, but they are indeed not passed through to the outs.}.
+
+        \paragraph{Negation}
+          \shdtt{$\interp { \neg a }(\mathit{is}, \mathit{rs})$} \par
+          Negation is the final predicate to be examined.
+          It is satisfied whenever the argument, a, is not.
+          The negation of the identity would therefore return the falsity: \shdtt{$\interp{ \neg 1 }\defeq \interp{0}$}.
 
         % Semantics of Predicates
         \begin{figure}
@@ -745,7 +786,7 @@ Finally, we will release this code, compiler, and language on GitHub.
         \end{figure}
 
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
-      %%% BEGIN SECTION 3.2.2 %%%
+      %%% BEGIN 2SUBSEC 3.2.2 %%%
       %%% SEMANTICS: POLICIES %%%
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Semantics of Policies}\label{sec:spec:sem:pol}
@@ -812,12 +853,44 @@ Finally, we will release this code, compiler, and language on GitHub.
           \caption{The semantics of policies in \sysname.}
           \label{fig:spec:sem:pol}
         \end{figure}
+    %}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%% END OF SUBSECTION 3.2 %%%
+  %%% SYSTEM SEMANTICS      %%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%% BEGIN OF SUBSECTION 3.3 %%%
+  %%% SYSTEM LIMITATIONS      %%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \subsection{The Limitations of \sysname}\label{sec:spec:lim}
+      The \sysname language was designed to be as expressive as possible, but some of our defining characteristics have their inherent flaws.
+      To start, \sysname assumes a single-stream in and single-stream out model.
+      This means that it is not possible to send multiple instructions at once, like in VLIW\footnote{
+      Very Long Instruction Word: refers to the idea of packing multiple standard instructions into a single machine command.} or thread-parallel processors.
+      Non-sequential instructions pose an issue as well; \sysname is not equipped to handle multiple outputs at once.
+      This presents a bottleneck to the results stream.
+      Out-of-Order Execution is, therefore, not currently supported in an efficient way\footnote{See Section~\ref{sec:more:ooe} for more discussion on my attempts to remedy this.}.
+      \par
+
+      \sysname is also not programmable after synthesis.
+      It may be possible to cleverly design a dynamic policy to handle a wide range of cases and interpret the situation is presented intelligently.
+      Still, an unforeseen edge case can not be added after compiling this policy.
+      To make something programmable, an engineer would have to settle for a \textit{Field Programmable Gate Array} (FPGA).
+      These devices tend to be a lot less efficient than on-chip designs, as they are (almost) always found outside the processor package.
+      \par
+
+      There are a few limitations of the compiler as well.
+      I leave the discussion of lower-level limitations for Section~\ref{sec:compile:lim}.
+%%%%%%%%%%%%%%%%%%%%%%%%
+%%% END OF SECTION 3 %%%
+%%% GARUDA SPECIFICS %%%
+%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%
 %%% BEGIN SECTON 4 %%%
 %%% PROOFS         %%%
 %%%%%%%%%%%%%%%%%%%%%%
-  \section{TODO: Name: Proofs}\label{sec:proofs}
+  \section{TODO (Name): Proofs}\label{sec:proofs}
     %%%%%%%%%%%%%%%%%%%%%%%%
     %%% BEGIN SECTON 4.0 %%%
     %%% WHY PROOFS       %%%
@@ -853,15 +926,6 @@ Finally, we will release this code, compiler, and language on GitHub.
 %%% FULL COMPILATION %%%
 %%%%%%%%%%%%%%%%%%%%%%%%
   \section{Compilation to Verilog}\label{sec:comp}
-    Label Test: 
-    ~\ref{sec:comp:int}
-    ~\ref{sec:comp:comp}
-    ~\ref{sec:comp:comp:pred}
-    ~\ref{sec:comp:comp:pol}
-    ~\ref{fig:comp:int}
-    ~\ref{tab:comp:comp:ports}
-    ~\ref{fig:comp:comp:pred}
-    ~\ref{fig:comp:comp:pol}
     %%%%%%%%%%%%%%%%%%%%%%%%
     %%% BEGIN SECTON 5.1 %%%
     %%% INTERMEDIATE     %%%

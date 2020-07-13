@@ -263,6 +263,93 @@ Finally, we will release this code, compiler, and language on GitHub.
 %%% PRIOR WORK      %%%
 %%%%%%%%%%%%%%%%%%%%%%%
   \section{Prior Work}\label{sec:priorwork}
+    All the prior work we have seen seems to fall under two broad categories: runtime monitors, or compile-time verification.
+    Runtime monitors are sometimes programmable after synthesis, making them more dynamic for general applications.
+    They can make decisions on how to enforce a policy while the processor is actively executing instructions.
+    Compiler extensions and verification tend to be static.
+    The user cannot change the enforced policy after the IC has been synthesized.
+    However, compiler extensions also tend to have less temporal, spatial, and energetic overhead than their runtime counterparts.
+    The synthesized processor does not trap when a compiled policy is violated.
+    Rather, it simply cannot execute prohibited instructions. 
+    A comparison of the two can be found in Table~\ref{table:prior:run-vs-comp}.
+    In Section~\ref{sec:spec}, %%TODO: point to subsection?
+    we will see how \sysname fits into this classification.
+
+    \subsection{Runtime Monitors}\label{sec:prior:runtime}
+      As discussed above, a popular angle of attack for protecting computer hardware is the insertion of a runtime monitor.
+      These monitors may be static~\cite{2010trustnetdatawatch} or programmable~\cite{2007raksha, 2014pump}.
+      There are three publications on this subject that we studied before writing \sysname.
+
+      \subsubsection{TrustNet and DataWatch}\label{sec:prior:runtime:tndw}
+        In the 2010 publication, \textit{Tamper Evident Microprocessors}~\cite{2010trustnetdatawatch}, \textbf{TrustNet} and \textbf{DataWatch} were introduced as a pair of complementary monitors.
+        The aim of these monitors is to detect hardware trojans within the system they are implemented in.
+        The attack model revolves around the possibilities of a malicious engineer inserting a tampered functional unit, or a simple mistake that was not patched before synthesis.
+        Rather than use the older solutions that rely on duplication, they call attention to a basic principle of all microprocessors.
+        For any given functional unit (\textit{Fetch, Execute, Memory}), the execution of an instruction is separate, but not independent, of the actions of the surrounding units.
+        For example, the execution of an arithmetic instruction in the \textit{EXE} stage of a pipeline occurs at a later time than accessing the arguments from the \textit{Register File (RF)}.
+        This is to say, the action of gathering arguments and then executing the instruction are two separate events.
+        However, how the \textit{EXE} unit behaves is directly dependent on what happens in the \textit{RF}.
+        With this observation, \textbf{TrustNet} can determine if a functional unit is behaving erratically.
+        The behavior of each unit can be predicted by its inputs, and a mismatch in the prediction and performed actions indicates potentially dishonest programming.
+        \par
+
+        A keen reader will have noticed that if multiple functional units have been tampered with, \textbf{TrustNet} may be unable to detect inconsistencies.
+        The publishers note that previous research suggests this to be near-infeasible, and carry on with the assumption that only one unit has been altered.
+        \par
+
+        \textbf{DataWatch} is a simpler idea that focuses on memory accesses.
+        Suppose the tampered \textit{MEM} stage does not attempt to execute multiple instructions from one, but instead tries to redirect the storage of a secret to an insecure location.
+        \textbf{DataWatch} protects against these kinds of attacks with partial duplication of the data cache.
+        If a store is fired to save at $\$(01)$ but the \textit{MEM} unit attempts to save to $\$(05)$, \textbf{DataWatch} can detect this discrepancy.
+        It should be noted that a full duplication of the cache is not practical, so cache mapping techniques are employed.
+        However, incomplete mappings of the original cache to the reference cache may allow for small holes in their detection net.
+
+      \subsubsection{Raksha and PUMP}\label{sec:prior:runtime:RP}
+        These two programmable monitors are actually different publications, but they are similar enough to be discussed in tandem.
+        Indeed, \textit{Raksha} is cited as a reference in \textit{PUMP}~\cite{2014pump, 2015pumpupol}, and that citation is how I originally came across the technology.
+        \textit{PUMP}~\cite{2014pump} is a Programmable Unit for Metadata Processing (hence the name).
+        They add a new stage to the standard 5-stage pipeline, the namesake programmable unit.
+        The authors were clearly fans of Isaac Asimov's \textit{The Gods Themselves}~\cite{1972tgt} in which another one of his many computational rules is introduced.
+        The $0-1-\infty$ rule, in short, states that there should not be arbitrary constraints put on standards or rulesets.
+        An action should be disallowed, allowed once, or allowed to reoccur indefinitely.
+        For contrast, assume a theoretically perfect printer that will never break.
+        If it allows only 100 prints, it would violate the $0-1-\infty$ rule as there is an arbitrary constraint on what the user can do.
+        \textit{PUMP} follows this rule by allowing an arbitrary number of policies to be defined.
+        They cleverly implement this by use of a policy cache that stores ``concrete rules'' and the ability to define policies as ``symbolic rules''.
+        Symbolic rules can be nested like parenthetical expressions, but they always compile to the concrete rules used in the cache.
+        This ``compilation'' is done dynamically whenever the \textit{PUMP} determines the need for another concrete rule.
+        It simply looks at the set of symbolic rules and unravels them until it hits the concrete floor.
+        \par
+
+        \textit{Raksha}~\cite{2007raksha} is indirectly crtiticized in \textit{PUMP} for not honoring the $0-1-\infty$ rule.
+        However, it is still worth taking a look at.
+        As an interesting side note, \textit{Raksha} is reported to mean \textit{protection} in Sanskrit.
+        \textit{Raksha} benefits in comparison to \textit{Gate-Level Information Flow Tracking} (GLIFT)~\cite{2009glift} because it does not require a full duplication set of the gates.
+        Ironically, \textit{Raksha} was published two years prior to GLIFT.
+        \textit{Raksha} follows the idea of Dynamic Information Flow Tracking (DIFT) to provide ``a \textit{flexible and programmable mechanism for specifying security policies}''~\cite{2007raksha} (emphasis theirs).
+        They also enable the ability for exceptions to resolve at the same level of the violating program; the core of why I discuss this solution.
+        \par
+
+        Many security monitors, programmable or otherwise, determine their actions at the Operating System (OS) level.
+        The OS level is generally avoided as mush as possible, as there are no restrictions on what the OS can do.
+        This is by definition of the OS itself, and is why the \shdtt{sudo} command exists in most shells.
+        You can tell the \shdtt{root} (lowest level) to do something without going into the \shdtt{su} (superuser).
+        The ability to write a command like \shdtt{sudo apt-get install gcc} helps avoid accidents if the user types \shdtt{rm \bksl} immediately afterwards.
+        However, the OS will not allow itself to be deleted by a lower process and \shdtt{rm \bksl} would fail in any protected terminal.
+        For most processes, a form of sandboxing is implemented.
+        This means they cannot alter the memory space of external or higher processes.
+        In reality, the implementation for many apps is a bit more complicated to allow for controlled inter-application communication.
+        \par
+
+        \textit{Raksha}, in the same spirit, processes violations in the same security space as the offending program.
+        Preventing traps to the OS, or a similarly powerful process, prevents attacks that exploit this trapping.
+        If a process can manage to deduce how such a trap occurs, it may be able to exploit it.
+        If the reader knows what SQL Injection Attacks are, they will be all too familiar with this idea.
+        A poorly constructed trap, even good systems, can have injection attacks.
+        In addition, it should be noted that a trap is generally a very slow event.
+        \textit{Raksha} also uses program-level resolution to increase the speed of the entire system.
+        Their implementation on an FPGA demonstrates this nicely.
+
     \begin{table}
       \centering
       \begin{tabular}{|c|l|l|} 
@@ -291,6 +378,94 @@ Finally, we will release this code, compiler, and language on GitHub.
       \label{table:prior:run-vs-comp}
     \end{table}
 
+    \subsection{Verilog Extensions}\label{sec:prior:csbl}
+      Verilog extension research is vast, but this thesis will focus on a chain of four very similar ones ~\cite{2011caisson, 2014sapper, 2015secverilog, 2017secverilogbl}.
+      Each of these verilog extensions is fairly incremental, and they all work to enforce security lattices in the hardware code itself.
+      As mentioned earlier and demonstrated in Table~\ref{table:prior:run-vs-comp}, these solutions are static once fabricated.
+      As you will see though, they manage to implement their goals well within this restriction.
+
+      \subsubsection{Caisson}\label{sec:prior:csbl:c}
+        In short, \textit{Caisson}~\cite{2011caisson} will not allow an instruction to access a part of the hardware if it does not meet the required security level.
+        The authors define a Verilog extension to facilitate assigning hardware modules different security levels.
+        Two levels of security are defined, \textit{high} (H: trusted), and \textit{low} (L: untrusted).
+        When defining a module, the compiler makes the user apply a security tag (H or L).
+        This solution alone would closely resemble the spatial efficiency pitfalls of GLIFT~\cite{2009glift}.
+        In response to this problem, \textit{Caisson} allows nested and parameterized security levels.
+        In short, the engineer does not have to copy each module for each security level.  The compiler takes care of that, and introduces efficiency fixes.
+        I recommend looking at Figure 2 of their paper to get a better idea of how to code using these nesting and parameterizing features.
+
+      \subsubsection{Sapper}\label{sec:prior:csbl:s}
+        An improvement on \textit{Caisson}, \textit{Sapper}~\cite{2014sapper} is largely composed by the same authors.
+        The main contribution of this paper is that registers and wires can be connected to the security levels as well.
+        They also provide an in-depth description of the type-checking in their compiler.
+        Taint tracking is much easier to implement in \textit{Sapper} than in their previous work, so they demonstrate their additions with this example.
+        Taint tracking is a method of tracking the propagation of insecure data manipulation.
+        An insecure process may attempt to alter a secure segment of memory.
+        This can have cascading effects on other, indirectly altered data.
+        Tainting the result of any tainted instruction or argument is an effective way of determining if a piece of data has been compromised.
+        In addition to this variability, improved \textit{state transitions} are introduced.
+        In \textit{Caisson}, the engineer could add what are effectively branches and return systems to their code, something not seen within standard synthesizable Verilog.
+        Sapper extends these keyword calls with their mutable tagging system. 
+
+      \subsubsection{SecVerilog and SecVerilog BL}\label{sec:prior:csbl:sv}
+        \textit{SecVerilog}~\cite{2015secverilog} and its extension \textit{SecVerilogBL}~\cite{2017secverilogbl} are authored by a different university with different people.
+        However, they cite, and seem to continue the work of, both \textit{Caisson} and \textit{Sapper}.
+        \textit{SecVerilog} starts by enforcing time-sensitivity and enables significantly more complex security policies.
+        Recall \textit{PUMP} from Section~\ref{sec:prior:runtime:RP} and the ability to dynamically track information and security policies using symbolic rules.
+        In the same vein, \textit{SecVerilog} enables a user to write dynamic security lattices.
+        This non-concrete method of enforcing a lattice is not possible in \textit{Caisson} or \textit{Sapper}.
+        \par
+
+        \textit{SecVerilogBL} improves upon its predecessor in a few ways.
+        For convenience, there can be multiple security levels assigned to a single variable.
+        This is achieved by enabling security tagging at the bit level and for each element of an array.
+        For example, the user could assign the lower half of a word to low security, and the upper half to higher security.
+        More importantly, they extend \textit{SecVerilog} by adding the ability to downgrade a piece of data.
+        They use this new method sparingly, but demonstrate how it can improve the security of previously unprotected level-changing techniques.
+        In fact, of all the solutions mentioned so far in Section~\ref{sec:prior:csbl}, only \textit{SecVerilogBL} seems to have an intuitive way for the user to declassify elements.
+
+    \subsection{Kleene Algebras}\label{sec:prior:ka}
+      While not exclusive to security, I would like to explain the core of Kleene Algebra~\cite{1958lwi, 1975idmka, 2009regexd}.
+      Kleene Algebras are a subset of De Morgan Algebras~\cite{1975idmka}.
+      Before being named after Stephen Cole Kleene, they were known as Lattices with Involutes~\cite{1958lwi}.
+      The exact nature of these abstract algebras is outside the scope of this thesis, but the key idea I want to emphasize is that of the \textit{Kleene Star *}.
+
+      \subsubsection{The Kleene Star and Regular Expressions}\label{sec:prior:ka:star}
+        The Kleene Star (*) is most readily found in the language of \textit{Regular Expressions}.
+        Regular expressions are match-making languages which return sets.
+        The user writes a sentence, and when it is compiled, the regular expression returns a set of satisfactory strings.
+        It is common practice to write such a relation inverted though; a string $s$ \textit{satisfies} a regular expression $r$.
+        For small expressions, the entire satisfactory set of these strings $S$ can be returned.
+        A regular expression \shdtt{a[bc]d} would return the set \shdtt{$S$ = \{'abd', 'acd'\}}.
+        Regular expressive languages do not have a standard definition, so I will follow the most common one and explicitly define the convention \sysname uses in Section~\ref{sec:spec:synt}.
+        \par
+
+        Regular expressions contain the special Kleene Star \textit{*} mentioned earlier.
+        In fact, regular expressive languages are a subset of a Kleene algebra.
+        In the context of a regular expression, the Kleene Star is meant to match with an infinite repetition of what came before it.
+        The regular expression \shdtt{a*} would not only match 'a', 'aa', and 'aaa', but all strings of any length consisting of the letter 'a'.
+        The star can be combined with parenthesis to produce an expression \shdtt{(ab)* = \{'ab', 'abab', $\dots$\}} or be used multiple times in a single sentence \shdtt{a*b* = \{'ab', 'aab', $\dots$, 'abb' $\dots$\}}.
+        Because \sysname operates on streams instead of sets, the Kleene Star is not actually used.
+        The principle, however, is used and found in the intermediate language in Section~\ref{sec:compile}.
+        A stream can be thought of as an ever-expanding set and is how we implement the idea of a Kleene Star.
+
+      \subsubsection{Kleene Algebra with Tests}\label{sec:prior:ka:kat}
+        Kleene Algebra with Tests are simply the unification of Kleene and boolean algebras.
+        They were introduced by Dexter Kozen in 1997~\cite{1997kat, 2006okat}.
+        The use of a Kleene algebra with tests has already been applied to the security of internet switches~\cite{2014netkat}, though further use seems to be uncommon.
+        As \sysname is simply a Kleene algebra with tests, minus the Kleene Star, I will leave the full definition of such a language to Section~\ref{sec:spec:synt}.
+
+    \subsection{Monitor Theory}\label{sec:prior:mon}
+      Finally, we reach monitor theory.
+      In \sysname, we elect to use a monitor theory similar to that presented in a technical report from 2010~\cite{2010monitor}.
+      In it, a computer is modeled as a set of instructions and an execution unit.
+      These are referred to as the ``Untrusted Application'' and the ``Executing System''.
+      This monitor mandates some sort of result, meaning it can only access the next input after it has processed the current one.
+      In layman's terms, it can only process a single item at a time.
+      This kind of security monitor acts upon two streams: the \textit{actions} sent by the application, and the \textit{results} returned by the system.
+      The monitor sits between the application and system, splitting these two streams into four.
+      The actions become submitted and valid actions as the results do the same.
+      We denote these four connections as \textit{instructions\_in}, \textit{instructions\_out}, \textit{results\_in}, and \textit{results\_out} for \sysname.
 %%%%%%%%%%%%%%%%%%%%%
 %%% END SECTION 2 %%%
 %%% PRIOR WORK    %%%
@@ -302,24 +477,41 @@ Finally, we will release this code, compiler, and language on GitHub.
 %%% SYSTEM SPECS   %%%
 %%%%%%%%%%%%%%%%%%%%%%
   \section{The Implementation of \sysname}\label{sec:spec}
-    % \oldname was initially designed with the goal of making the definitions of security policies available to more users.
-    % Hardware policy enforcement was largely relegated to those who understood hardware and the languages used to describe it.
-    % All of the compiled extensions to Verilog, by definition, require the engineer to have an understanding of Verilog itself.
-    % In addition, the author of a security policy would have a difficult time verifying if that policy functioned as intended.
-    % Does their policy \textit{verifiably} work for all possible cases, or have they missed an edge case that could become the next Spectre or Meltdown~\cite{2018spectre, 2018meltdown}?
-    % \par
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% BEGIN SECTION 3.1 %%%
-    %%% SYSTEM SYNTAX     %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%
+  %   \sysname was initially designed with the goal of making the definitions of security policies available to more users.
+  %   Hardware policy enforcement was largely relegated to those who understood hardware and the languages used to describe it.
+  %   All of the compiled extensions to Verilog, by definition, require the engineer to have an understanding of Verilog itself.
+  %   In addition, the author of a security policy would have a difficult time verifying if that policy functioned as intended.
+  %   Does their policy \textit{verifiably} work for all possible cases, or have they missed an edge case that could become the next Spectre or Meltdown~\cite{2018spectre, 2018meltdown}?
+  %   \par
+
+  %   The solution to the first problem was clear in my mind: create a language specifically for defining security policies for the hardware.
+  %   This language would act like a standard scripting language, but be stripped to its essentials.
+  %   With the help of Dr. Gordon Stewart, we were able to deduce that a Kleene Algebra with Tests was the best base model.
+  %   Many programmers are familiar with some form of regular expression language.
+  %   As regular expressions are simply a subset of Kleene algebras, our language should be comprehensive to those who have previously used them.
+  %   The tests for KAT languages are a form of boolean algebra.
+  %   We add the ``Test'' predicate to allow for the ability to ``test'' a field's value.
+  %   This predicate acts as a standard boolean variable in a boolean algebra expression.
+  %   \par
+
+  %   To make this language \textit{verifiable}, we would have to use a proof assistant.
+  %   Dr. Stewart started my first tutorial with him by teaching me the basics of Coq.
+  %   I came back to the course two years later once I had more time, but we were focused on the basics of formal proofs at the time.
+  %   Coq is generally used to write mathematical proofs; for example, the commutativity of natural numbers: $m + n = n + m$.
+  %   The way Coq achieves the verification of its files is by use of a ``program'' of sorts.
+  %   The specifics of how it does this are also out of the scope of this thesis, but we used this feature to export the program.
+  %   Compilation and extraction of these programs is described in detail in Section~\ref{sec:compile}.
+    %%%%%%%%%%%%%%%%%%%%%%%%
+    %%% BEGIN SUBSEC 3.1 %%%
+    %%% SYSTEM SYNTAX    %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%
     \subsection{Syntax}\label{sec:spec:synt}
       We start by defining the syntax of \sysname.
       As our language is derived from KAT, this definition may be familiar to some readers.
    
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
-      %%% BEGIN SECTION X.1.1 %%%
-      %%% SYSTEM DEFINITIONS  %%%
+      %%% BEGIN 2SUBSEC 3.1.1 %%%
+      %%% SYNTAX: DEFINITIONS %%%
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Definitions}\label{sec:spec:synt:defn}
         First we define the equivalents of boolean variables to our language in Figure~\ref{fig:spec:synt:defn}.
@@ -343,7 +535,7 @@ Finally, we will release this code, compiler, and language on GitHub.
             Inputs           & $i$       & $::=$ & $\{f_{i_{1}} = v_{i_{1}} ,\ \dots\ ,\ f_{i_{k}} = v_{i_{k}}\}$\\
             Outputs          & $o$       & $::=$ & $\{f_{o_{1}} = v_{o_{1}} ,\ \dots\ ,\ f_{o_{k}} = v_{o_{k}}\}$\\
             Obfuscation Fxn  & $\Phi$    & $::=$ & $f \rightarrow \obf{f} \mid \obf{f} \rightarrow f$
-            % TODO: how do we define state in and state out? -- Who cares?  that's not part of the language
+            % TODO: how do we define state in and state out? --> Who cares?  that's not part of the language
             % TODO: Mention that Inputs and Outputs can generically refer to either EXE or MEM.
             %       Indeed, the Outputs refers to both.
           \end{tabular}
@@ -351,10 +543,10 @@ Finally, we will release this code, compiler, and language on GitHub.
           \label{fig:spec:synt:defn}
         \end{figure}
 
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      %%% BEGIN SECTION 3.1.2  %%%
-      %%% SYNTAX OF PREDICATES %%%
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%% BEGIN 2SUBSEC 3.1.2 %%%
+      %%% SYNTAX: PREDICATES  %%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Syntax of Predicates}\label{sec:spec:synt:pred}
         After the variables are defined, we move on to the \textit{Predicates}.
         The predicate language is how a programmer designs a test.
@@ -365,6 +557,7 @@ Finally, we will release this code, compiler, and language on GitHub.
         Note that we define the variables \shdtt{$a, b$} to be predicate placeholders.
         These variables are used as a shorthand in our Extended BNF~\cite{ISO14977} specifications.
         Otherwise, we would have to write \textit{<Predicates>} every time we wanted to reference this type.
+
         % Predicates table
         \begin{figure}
           \centering
@@ -381,8 +574,8 @@ Finally, we will release this code, compiler, and language on GitHub.
         \end{figure}
 
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
-      %%% BEGIN SECTION 3.1.3 %%%
-      %%% SYNTAX OF POLICIES  %%%
+      %%% BEGIN 2SUBSEC 3.1.3 %%%
+      %%% SYNTAX: POLICIES    %%%
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Syntax of Policies}\label{sec:spec:synt:pol}
         \textit{Policies} are quite a bit more complicated than predicates.
@@ -394,7 +587,7 @@ Finally, we will release this code, compiler, and language on GitHub.
         It is the \textit{Test} part of a Kleene algebra with tests.
         Scripting programmers may see this as the equivalent of an \shdtt{if} statement, which is accurate.
         If the predicate \shdtt{$a$} in \shdtt{$\mathbf{test}(a)$} evaluates to the \textit{Identity}, the equivalent scripting functionality would be a satisfied \shdtt{if} statement.
-        In \oldname, this means that the evaluation of the policy can continue.
+        In \sysname, this means that the evaluation of the policy can continue.
         The actual function of this is explained in far more detail in Section~\ref{sec:spec:sem:pol}.
         \par
         
@@ -433,13 +626,15 @@ Finally, we will release this code, compiler, and language on GitHub.
           \caption{Syntax of Policies in \sysname}
           \label{fig:spec:synt:pol}
         \end{figure}
+  %%%%%%%%%%%%%%%%%%%%%%
+  %%% END SUBSEC 3.1 %%%
+  %%% SYSTEM SYNTAX  %%%
+  %%%%%%%%%%%%%%%%%%%%%%
 
-
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% BEGIN SECTION 3.2 %%%
-    %%% SYSTEM SEMANTICS  %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%
+  %%% BEGIN SUBSEC 3.2 %%%
+  %%% SYSTEM SEMANTICS %%%
+  %%%%%%%%%%%%%%%%%%%%%%%%
     \subsection{Semantics}\label{sec:spec:sem}
       Here we define what each of the syntactic rules described above actually mean.
       In effect, this is a translation of the language into what the monitor can do for any given input.
@@ -453,17 +648,17 @@ Finally, we will release this code, compiler, and language on GitHub.
       This printer is a useful analogy of a single-stream machine.
       \par
 
-      If we bring the context back to \oldname, we must use Figure~\ref{fig:spec:sem:dprint}.
+      If we bring the context back to \sysname, we must use Figure~\ref{fig:spec:sem:dprint}.
       This image depicts a printer with two streams of paper, with the outputs for each on opposite sides.
-      \oldname operates in this way, and I have labeled the instruction and result streams accordingly.
+      \sysname operates in this way, and I have labeled the instruction and result streams accordingly.
       The blank paper feeding into the input side of this printer can be thought of as the instructions being sent to the CPU.
-      \oldname is given an opportunity to modify, or ``print'' on, this stream.
+      \sysname is given an opportunity to modify, or ``print'' on, this stream.
       The inputs stream exits the printer, is processed by the CPU, and returns the results stream.
       This stream can be modified as well by the exact same device that also processed the inputs.
       Unifying the input and output processing in this way means that communication, and thus decision making, is easier for complex stream processing.
       \par
 
-      For how the \textit{language} of \oldname works, we have to refer to the theory of regular expressive languages from Section~\ref{sec:prior:ka:star}.
+      For how the \textit{language} of \sysname works, we have to refer to the theory of regular expressive languages from Section~\ref{sec:prior:ka:star}.
       Recall that a regular expression, when compiled, returns a set of all possible satisfying strings.
       For our purposes, we don't just look at satisfactory strings, but satisfactory \textit{streams} of strings.
       We represent these streams as a set of all possible combinations of inputs.
@@ -471,7 +666,7 @@ Finally, we will release this code, compiler, and language on GitHub.
       A regular expression that accepts all strings returns the \textit{Power Set} of the input alphabet.
       Indeed, you can see in Figure~\ref{fig:spec:sem:pred} that the first entry is what the interpretation operator \shdtt{$\interp{\cdot}$}
       \footnote{The dot seen in the middle of the \shdtt{$\interp{}$} operator acts as a placeholder.
-      In this case, it is NOT a Sequential Concatenation.} means.
+      In this case, it is \textit{not} a Sequential Concatenation.} means.
       A similar policy that accepts all possible inputs returns the power set of the input and output streams \shdtt{$P(\mathbf{Stream}(E))\times P(\mathbf{Stream}(M))$}.
 
       % \begin{figure}
@@ -487,11 +682,52 @@ Finally, we will release this code, compiler, and language on GitHub.
       %   \caption{The monitor used in \oldname, demonstrated as a printer operating on two continuous feeds of paper.}
       %   \label{fig:spec:sem:dprint}
       % \end{figure}
+
       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      %%% BEGIN SECTION 3.2.1   %%%
+      %%% BEGIN 2SUBSEC 3.2.1   %%%
       %%% SEMANTICS: PREDICATES %%%
       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Semantics of Predicates}\label{sec:spec:sem:pred}
+        In this section, we will study just the Semantics of the predicates.
+        Please refer to Figure~\ref{fig:spec:sem:pred} for the mathematical definitions.
+        Note that the \shdtt{$\defeq$} symbol means \textit{``is defined to be equal to''}.
+        So, \shdtt{$\interp{abc}\defeq jkl$} can be read as \textit{``The interpretation of abc is definitionally equivalent to jkl''}.
+        Also, the term \textit{ins} in this section refers to when either stream enters the monitor.
+        This is not to be confused with the actual \textit{instruction} stream, which becomes relevant when we discuss the policies in Section~\ref{sec:spec:sem:pol}.
+
+        \paragraph{Falsity:}
+          \shdtt{$\interp{ 0 }(-, -)$} \par
+          The falsity predicate simply returns nothing.
+          There are no possible ins that can satisfy a policy of this nature.
+
+        \paragraph{Identity:}
+          \shdtt{$\interp{ 1 }(\mathit{is}, \mathit{rs})$} \par
+          The identity is satisfied by every possible input, and therefore returns everything.
+          Any instructions or results sent through this monitor pass through completely unaltered.
+
+        \paragraph{Test}
+          \shdtt{$\interp{ f=n }(\mathit{is}, \mathit{rs})$} \par
+          The test predicate is satisfied like an \shdtt{if} statement.
+          Whenever this statement is satisfied, the policy composed of a test is also satisfied.
+          Therefore, a monitor with a test lets all ins pass through which satisfy the given test.
+        
+        \paragraph{Sum}
+          \shdtt{$\interp{ a + b }(\mathit{is}, \mathit{rs})$} \par
+          The sum predicate operates in the same way as the boolean operator.
+          For any policy summing two predicates, the inputs that satisfy a, b, or a \textit{and} b are considered to satisfy the entire predicate.
+          These ins are passed through the monitor unchanged.
+ 
+        \paragraph{Product}
+          \shdtt{$\interp { a \cdot b }(\mathit{is}, \mathit{rs})$} \par
+          As with the sum predicate, the product operator acts like its boolean equivalent.
+          Whenever both a \textit{and} b are satisfied, the policy is satisfied.
+          Ins which satisfy both a and b are passed through the monitor, while all others are simply destroyed\footnote{It may not be entirely accurate to say these ins are destroyed, but they are indeed not passed through to the outs.}.
+
+        \paragraph{Negation}
+          \shdtt{$\interp { \neg a }(\mathit{is}, \mathit{rs})$} \par
+          Negation is the final predicate to be examined.
+          It is satisfied whenever the argument, a, is not.
+          The negation of the identity would therefore return the falsity: \shdtt{$\interp{ \neg 1 }\defeq \interp{0}$}.
 
         % Semantics of Predicates
         \begin{figure}
@@ -550,7 +786,7 @@ Finally, we will release this code, compiler, and language on GitHub.
         \end{figure}
 
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
-      %%% BEGIN SECTION 3.2.2 %%%
+      %%% BEGIN 2SUBSEC 3.2.2 %%%
       %%% SEMANTICS: POLICIES %%%
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Semantics of Policies}\label{sec:spec:sem:pol}
@@ -617,12 +853,44 @@ Finally, we will release this code, compiler, and language on GitHub.
           \caption{The semantics of policies in \sysname.}
           \label{fig:spec:sem:pol}
         \end{figure}
+    %}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%% END OF SUBSECTION 3.2 %%%
+  %%% SYSTEM SEMANTICS      %%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%% BEGIN OF SUBSECTION 3.3 %%%
+  %%% SYSTEM LIMITATIONS      %%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \subsection{The Limitations of \sysname}\label{sec:spec:lim}
+      The \sysname language was designed to be as expressive as possible, but some of our defining characteristics have their inherent flaws.
+      To start, \sysname assumes a single-stream in and single-stream out model.
+      This means that it is not possible to send multiple instructions at once, like in VLIW\footnote{
+      Very Long Instruction Word: refers to the idea of packing multiple standard instructions into a single machine command.} or thread-parallel processors.
+      Non-sequential instructions pose an issue as well; \sysname is not equipped to handle multiple outputs at once.
+      This presents a bottleneck to the results stream.
+      Out-of-Order Execution is, therefore, not currently supported in an efficient way\footnote{See Section~\ref{sec:more:ooe} for more discussion on my attempts to remedy this.}.
+      \par
+
+      \sysname is also not programmable after synthesis.
+      It may be possible to cleverly design a dynamic policy to handle a wide range of cases and interpret the situation is presented intelligently.
+      Still, an unforeseen edge case can not be added after compiling this policy.
+      To make something programmable, an engineer would have to settle for a \textit{Field Programmable Gate Array} (FPGA).
+      These devices tend to be a lot less efficient than on-chip designs, as they are (almost) always found outside the processor package.
+      \par
+
+      There are a few limitations of the compiler as well.
+      I leave the discussion of lower-level limitations for Section~\ref{sec:compile:lim}.
+%%%%%%%%%%%%%%%%%%%%%%%%
+%%% END OF SECTION 3 %%%
+%%% GARUDA SPECIFICS %%%
+%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%
 %%% BEGIN SECTON 4 %%%
 %%% PROOFS         %%%
 %%%%%%%%%%%%%%%%%%%%%%
-  \section{TODO: Name: Proofs}\label{sec:proofs}
+  \section{TODO (Name): Proofs}\label{sec:proofs}
     %%%%%%%%%%%%%%%%%%%%%%%%
     %%% BEGIN SECTON 4.0 %%%
     %%% WHY PROOFS       %%%
@@ -658,15 +926,6 @@ Finally, we will release this code, compiler, and language on GitHub.
 %%% FULL COMPILATION %%%
 %%%%%%%%%%%%%%%%%%%%%%%%
   \section{Compilation to Verilog}\label{sec:comp}
-    Label Test: 
-    ~\ref{sec:comp:int}
-    ~\ref{sec:comp:comp}
-    ~\ref{sec:comp:comp:pred}
-    ~\ref{sec:comp:comp:pol}
-    ~\ref{fig:comp:int}
-    ~\ref{tab:comp:comp:ports}
-    ~\ref{fig:comp:comp:pred}
-    ~\ref{fig:comp:comp:pol}
     %%%%%%%%%%%%%%%%%%%%%%%%
     %%% BEGIN SECTON 5.1 %%%
     %%% INTERMEDIATE     %%%

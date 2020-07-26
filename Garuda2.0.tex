@@ -592,9 +592,16 @@ Finally, we will release this code, compiler, and language on GitHub.
         In \sysname, this means that the evaluation of the policy can continue.
         The actual function of this is explained in far more detail in Section~\ref{sec:spec:sem:pol}.
         \par
-        
-        \textit{Injection Action} and \textit{Injection Result} are just methods of inserting their respective fields.
-        Say the policy engineer would like to return a zero instead of whatever the actual computed value was, \textit{Injection Result} would be the correct tool.
+
+        \textit{Obfuscation} is where the $\Phi$ functions become useful.
+        Up until now, the functions were simply defined, but not yet useable.
+        As the monitor is intended to be compiled as a pair of arms that encase either side of the state register, we assume a $\Phi$ and its inverse are provided.
+        If a single-stream monitor is being compiled, a single function would suffice.
+        The compiler breaks these streams up as described anyway, so the interpolation is sound.
+        \par
+
+        \textit{Injection to State Register} and \textit{Injection to Memory Unit} are just methods of inserting their respective fields.
+        If the monitor determines that the address calculated by the Execution stage is illegal, the engineer could inject a zero address into either field to return some sort of garbage.
         \par
 
         We come to the final three policy rules, by far the most complex and powerful.

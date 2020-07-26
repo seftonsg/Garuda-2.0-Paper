@@ -90,7 +90,7 @@
 %% values in them; it is your responsibility as an author to replace
 %% the commands and values with those provided to you when you
 %% complete the rights form.
-\acmConference[TODO????]{JETC Special Issue on Emerging Challenges and Solutions in Hardware Security}{15 June 2020}{????}
+\acmConference[]{}{}{}
 \setcopyright{acmcopyright}
 \copyrightyear{2020}
 \acmYear{2020}
@@ -126,7 +126,7 @@
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{\sysname}
+\title{\sysname: a Manuscript}
 
 %%
 %% The "author" command and its associated commands are used to define
@@ -135,7 +135,7 @@
 %%Check name legality.
 \author{Sage Sefton}
 \email{ss557415@ohio.edu}
-\affiliation{%
+\affiliation{
   \institution{Ohio University}
 }
 
@@ -143,9 +143,6 @@
   \email{karanth@ohio.edu}
 \affiliation{
   \institution{Ohio University}
-%   \city{Athens}
-%   \state{Ohio}
-%   \postcode{45701}
 }
 
 
@@ -247,7 +244,7 @@ Finally, we will release this code, compiler, and language on GitHub.
     \sysname Intro
     \cite{2011gem5sim}
     \cite{2019stt}
-    The rest of this thesis loosely follows a standard academic journal submission's organization.
+    This manuscript loosely follows a standard academic journal's organization.
     Section~\ref{sec:priorwork} summarizes a prior attack models and their proposed solutions.
     The \sysname language is described in detail in Section~\ref{sec:spec} and is demonstrated in Section~\ref{sec:proofs}.
     Section~\ref{sec:compile} describes the intermediate steps towards the compilation of \sysname into Verilog.
@@ -477,22 +474,24 @@ Finally, we will release this code, compiler, and language on GitHub.
 %%% SYSTEM SPECS   %%%
 %%%%%%%%%%%%%%%%%%%%%%
   \section{The Implementation of \sysname}\label{sec:spec}
-  %   \sysname was initially designed with the goal of making the definitions of security policies available to more users.
-  %   Hardware policy enforcement was largely relegated to those who understood hardware and the languages used to describe it.
-  %   All of the compiled extensions to Verilog, by definition, require the engineer to have an understanding of Verilog itself.
-  %   In addition, the author of a security policy would have a difficult time verifying if that policy functioned as intended.
+    \oldname was initially designed with the goal of making the definitions of security policies available to more users.
+    Hardware policy enforcement was largely relegated to those who understood hardware and the languages used to describe it.
+    All of the compiled extensions to Verilog, by definition, require the engineer to have an understanding of Verilog itself.
+    In addition, the author of a security policy would have a difficult time verifying if that policy functioned as intended.
+    A policy subject to a rigorous set of theorems could help prevent some of the major security leaks of recent years~\cite{2018spectre, 2018meltdown}
   %   Does their policy \textit{verifiably} work for all possible cases, or have they missed an edge case that could become the next Spectre or Meltdown~\cite{2018spectre, 2018meltdown}?
-  %   \par
+    \par
 
-  %   The solution to the first problem was clear in my mind: create a language specifically for defining security policies for the hardware.
-  %   This language would act like a standard scripting language, but be stripped to its essentials.
-  %   With the help of Dr. Gordon Stewart, we were able to deduce that a Kleene Algebra with Tests was the best base model.
-  %   Many programmers are familiar with some form of regular expression language.
-  %   As regular expressions are simply a subset of Kleene algebras, our language should be comprehensive to those who have previously used them.
-  %   The tests for KAT languages are a form of boolean algebra.
-  %   We add the ``Test'' predicate to allow for the ability to ``test'' a field's value.
-  %   This predicate acts as a standard boolean variable in a boolean algebra expression.
-  %   \par
+    \sysname extends on \oldname with the addition of $\Phi$ functions.
+    These functions are a way to import existing, more complex verilog modules.
+    The modules can be designed by \sysname itself as a way to further modularize the language, or a way to add obfuscation.
+    We demonstrate the latter in Section~\ref{sec:proofs}.
+    %TODO: is it proofs?
+    We also remove slicing to instructions and registers.
+    Our monitor theory is still dual stream in semantics, but is simplified at a higher level.
+    %TODO: if we have n-slice/stream monitors, wouldn't this change?
+    The passthrough nature of obfuscation means that whenever some operation is applied to the inputs, it must also be performed on the outputs to preserve the intended register value.
+    \par
 
   %   To make this language \textit{verifiable}, we would have to use a proof assistant.
   %   Dr. Stewart started my first tutorial with him by teaching me the basics of Coq.
@@ -507,7 +506,7 @@ Finally, we will release this code, compiler, and language on GitHub.
     %%%%%%%%%%%%%%%%%%%%%%%%
     \subsection{Syntax}\label{sec:spec:synt}
       We start by defining the syntax of \sysname.
-      As our language is derived from KAT, this definition may be familiar to some readers.
+      As our language is derived from KAT, these definitions should read somewhat similarly.
    
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       %%% BEGIN 2SUBSEC 3.1.1 %%%
@@ -515,13 +514,15 @@ Finally, we will release this code, compiler, and language on GitHub.
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Definitions}\label{sec:spec:synt:defn}
         First we define the equivalents of boolean variables to our language in Figure~\ref{fig:spec:synt:defn}.
-        In the same way a boolean algebra would define a boolean variable to belong to the set $\{0 \mid 1\}$, we define what it means for a variable to be a field, instruction, or result.
-        Generic fields $f$ are defined as either an Instruction Field or a Result Field.
+        In the same way a boolean algebra would define a boolean variable to belong to the set $\{0 \mid 1\}$, we define what it means for a variable to be a field, input, output, or a $\Phi$ function.
+        Generic fields $f$ are defined as a superset of the wires surrounding the EXE/MEM state register, and the register itself.
         Instruction fields are the variables that represent instructions.
         In a statement \shdtt{$f_{i_{1}} =$ \textbf{ADD} x1 x2 x3}, the \textit{field} would be \shdtt{$f_{i_{1}}$}.
         Result fields are the same, except they are denoted with an 'r': \shdtt{$f_{r_{1}}$}.
         Instructions and Results follow a similar convention, and we have already defined one.
         The string \shdtt{$f_{i_{1}} =$ \textbf{ADD} x1 x2 x3} is an instruction itself, where the machine code is just \shdtt{\textbf{ADD} x1 x2 x3}.
+        Also note the addition of the $\Phi$ function.
+        We display the function as an obfuscator from some field to its convoluted form, though this can really be any function over a field.
 
         % Definitions table
         \begin{figure}
@@ -550,8 +551,8 @@ Finally, we will release this code, compiler, and language on GitHub.
       \subsubsection{Syntax of Predicates}\label{sec:spec:synt:pred}
         After the variables are defined, we move on to the \textit{Predicates}.
         The predicate language is how a programmer designs a test.
-        Upon first glance at Figure~\ref{fig:spec:synt:pred}, most viewers may see this as just a representation of a boolean algebra.
-        In fact, as touched upon in Section~\ref{sec:prior:ka:kat}, the predicate language is exactly a boolean algebra.
+        Figure~\ref{fig:spec:synt:pred} resembles that of a boolean algebra.
+        As touched upon in Section~\ref{sec:prior:ka:kat}, the predicate language is exactly a boolean algebra.
         The only potential difference is the \textit{Test} field, which is just a way to turn a field's value into a boolean one.
         The field \shdtt{$f_i$} is clearly not a boolean variable, but \shdtt{$f_i = f_i$} is\footnote{Most languages see this as an assignment.  In \sysname, assignments are done with the $\leftarrow$.}.
         Note that we define the variables \shdtt{$a, b$} to be predicate placeholders.
@@ -579,6 +580,7 @@ Finally, we will release this code, compiler, and language on GitHub.
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Syntax of Policies}\label{sec:spec:synt:pol}
         \textit{Policies} are quite a bit more complicated than predicates.
+        %TODO: Monitor theory has changed
         The policy language is an augmentation of a Kleene algebra, where all the primitives are relevant to the monitor theory presented in Section~\ref{sec:prior:mon}.
         The formal definition of all these policies are found in Figure ~\ref{fig:spec:synt:pol}.
         \par

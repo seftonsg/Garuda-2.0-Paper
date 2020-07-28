@@ -709,8 +709,8 @@ Finally, we will release this code, compiler, and language on GitHub.
         Please refer to Figure~\ref{fig:spec:sem:pred} for the definitions.
         Note that the \shdtt{$\defeq$} symbol means \textit{``is defined to be equal to''}.
         So, \shdtt{$\interp{abc}\defeq jkl$} can be read as \textit{``The interpretation of abc is definition equivalent to jkl''}.
-        Also, the term \textit{is} in this section refers to when either stream enters the monitor.
-        This is not to be confused with the actual \textit{instruction} stream, which becomes relevant when we discuss the policies in Section~\ref{sec:spec:sem:pol}.
+        % Also, the term \textit{es} in this section refers to when either stream enters the monitor.
+        % This is not to be confused with the actual \textit{instruction} stream, which becomes relevant when we discuss the policies in Section~\ref{sec:spec:sem:pol}.
 
         \paragraph{Falsity:}
           \shdtt{$\interp{ 0 }(-, -)$} \par
@@ -718,31 +718,31 @@ Finally, we will release this code, compiler, and language on GitHub.
           There are no possible ins that can satisfy a policy of this nature.
 
         \paragraph{Identity:}
-          \shdtt{$\interp{ 1 }(\mathit{is}, \mathit{rs})$} \par
+          \shdtt{$\interp{ 1 }(\mathit{es}, \mathit{ms})$} \par
           The identity is satisfied by every possible input, and therefore returns everything.
           Any instructions or results sent through this monitor pass through completely unaltered.
           The power set of the alphabet is also definition equivalent to the interpretation of Identity.
 
         \paragraph{Test:}
-          \shdtt{$\interp{ f=n }(\mathit{is}, \mathit{rs})$} \par
+          \shdtt{$\interp{ f=n }(\mathit{es}, \mathit{ms})$} \par
           The test predicate is satisfied like an \shdtt{if} statement.
           Whenever this statement is satisfied, the policy composed of a test is also satisfied.
           Therefore, a monitor with a test lets all ins pass through which satisfy the given test.
         
         \paragraph{Sum:}
-          \shdtt{$\interp{ a + b }(\mathit{is}, \mathit{rs})$} \par
+          \shdtt{$\interp{ a + b }(\mathit{es}, \mathit{ms})$} \par
           The sum predicate operates in the same way as the boolean operator.
           For any policy summing two predicates, the inputs that satisfy a, b, or a \textit{and} b are considered to satisfy the entire predicate.
           These ins are passed through the monitor unchanged.
  
         \paragraph{Product:}
-          \shdtt{$\interp { a \cdot b }(\mathit{is}, \mathit{rs})$} \par
+          \shdtt{$\interp { a \cdot b }(\mathit{es}, \mathit{ms})$} \par
           As with the sum predicate, the product operator acts like its boolean equivalent.
           Whenever both a \textit{and} b are satisfied, the policy is satisfied.
           Is which satisfy both a and b are passed through the monitor, while all others are ignored.
 
         \paragraph{Negation:}
-          \shdtt{$\interp { \neg a }(\mathit{is}, \mathit{rs})$} \par
+          \shdtt{$\interp { \neg a }(\mathit{es}, \mathit{ms})$} \par
           Negation is the final predicate to be examined.
           It is satisfied whenever the argument, a, is not.
           The negation of the identity would therefore return the falsity: \shdtt{$\interp{ \neg 1 }\defeq \interp{0}$}.
@@ -800,7 +800,7 @@ Finally, we will release this code, compiler, and language on GitHub.
               \\
           \end{align*}}
           \caption{The semantics of predicates in \sysname.  While predicates remain unchanged from \oldname, the theory changes slightly}
-          \label{fig:spec:sem:pol}
+          \label{fig:spec:sem:pred}
         \end{figure}
       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       %%% END 2SUBSEC 3.2.1     %%%

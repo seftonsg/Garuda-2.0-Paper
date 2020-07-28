@@ -90,7 +90,7 @@
 %% values in them; it is your responsibility as an author to replace
 %% the commands and values with those provided to you when you
 %% complete the rights form.
-\acmConference[TODO????]{JETC Special Issue on Emerging Challenges and Solutions in Hardware Security}{15 June 2020}{????}
+\acmConference[]{}{}{}
 \setcopyright{acmcopyright}
 \copyrightyear{2020}
 \acmYear{2020}
@@ -126,7 +126,7 @@
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{\sysname}
+\title{\sysname: a Manuscript}
 
 %%
 %% The "author" command and its associated commands are used to define
@@ -135,7 +135,7 @@
 %%Check name legality.
 \author{Sage Sefton}
 \email{ss557415@ohio.edu}
-\affiliation{%
+\affiliation{
   \institution{Ohio University}
 }
 
@@ -143,9 +143,6 @@
   \email{karanth@ohio.edu}
 \affiliation{
   \institution{Ohio University}
-%   \city{Athens}
-%   \state{Ohio}
-%   \postcode{45701}
 }
 
 
@@ -247,7 +244,7 @@ Finally, we will release this code, compiler, and language on GitHub.
     \sysname Intro
     \cite{2011gem5sim}
     \cite{2019stt}
-    The rest of this thesis loosely follows a standard academic journal submission's organization.
+    This manuscript loosely follows a standard academic journal's organization.
     Section~\ref{sec:priorwork} summarizes a prior attack models and their proposed solutions.
     The \sysname language is described in detail in Section~\ref{sec:spec} and is demonstrated in Section~\ref{sec:proofs}.
     Section~\ref{sec:compile} describes the intermediate steps towards the compilation of \sysname into Verilog.
@@ -477,22 +474,24 @@ Finally, we will release this code, compiler, and language on GitHub.
 %%% SYSTEM SPECS   %%%
 %%%%%%%%%%%%%%%%%%%%%%
   \section{The Implementation of \sysname}\label{sec:spec}
-  %   \sysname was initially designed with the goal of making the definitions of security policies available to more users.
-  %   Hardware policy enforcement was largely relegated to those who understood hardware and the languages used to describe it.
-  %   All of the compiled extensions to Verilog, by definition, require the engineer to have an understanding of Verilog itself.
-  %   In addition, the author of a security policy would have a difficult time verifying if that policy functioned as intended.
+    \oldname was initially designed with the goal of making the definitions of security policies available to more users.
+    Hardware policy enforcement was largely relegated to those who understood hardware and the languages used to describe it.
+    All of the compiled extensions to Verilog, by definition, require the engineer to have an understanding of Verilog itself.
+    In addition, the author of a security policy would have a difficult time verifying if that policy functioned as intended.
+    A policy subject to a rigorous set of theorems could help prevent some of the major security leaks of recent years~\cite{2018spectre, 2018meltdown}
   %   Does their policy \textit{verifiably} work for all possible cases, or have they missed an edge case that could become the next Spectre or Meltdown~\cite{2018spectre, 2018meltdown}?
-  %   \par
+    \par
 
-  %   The solution to the first problem was clear in my mind: create a language specifically for defining security policies for the hardware.
-  %   This language would act like a standard scripting language, but be stripped to its essentials.
-  %   With the help of Dr. Gordon Stewart, we were able to deduce that a Kleene Algebra with Tests was the best base model.
-  %   Many programmers are familiar with some form of regular expression language.
-  %   As regular expressions are simply a subset of Kleene algebras, our language should be comprehensive to those who have previously used them.
-  %   The tests for KAT languages are a form of boolean algebra.
-  %   We add the ``Test'' predicate to allow for the ability to ``test'' a field's value.
-  %   This predicate acts as a standard boolean variable in a boolean algebra expression.
-  %   \par
+    \sysname extends on \oldname with the addition of $\Phi$ functions.
+    These functions are a way to import existing, more complex verilog modules.
+    The modules can be designed by \sysname itself as a way to further modularize the language, or a way to add obfuscation.
+    We demonstrate the latter in Section~\ref{sec:proofs}.
+    %TODO: is it proofs?
+    We also remove slicing to instructions and registers.
+    Our monitor theory is still dual stream in semantics, but is simplified at a higher level.
+    %TODO: if we have n-slice/stream monitors, wouldn't this change?
+    The passthrough nature of obfuscation means that whenever some operation is applied to the inputs, it must also be performed on the outputs to preserve the intended register value.
+    \par
 
   %   To make this language \textit{verifiable}, we would have to use a proof assistant.
   %   Dr. Stewart started my first tutorial with him by teaching me the basics of Coq.
@@ -507,7 +506,7 @@ Finally, we will release this code, compiler, and language on GitHub.
     %%%%%%%%%%%%%%%%%%%%%%%%
     \subsection{Syntax}\label{sec:spec:synt}
       We start by defining the syntax of \sysname.
-      As our language is derived from KAT, this definition may be familiar to some readers.
+      As our language is derived from KAT, these definitions should read somewhat similarly.
    
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       %%% BEGIN 2SUBSEC 3.1.1 %%%
@@ -515,13 +514,15 @@ Finally, we will release this code, compiler, and language on GitHub.
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Definitions}\label{sec:spec:synt:defn}
         First we define the equivalents of boolean variables to our language in Figure~\ref{fig:spec:synt:defn}.
-        In the same way a boolean algebra would define a boolean variable to belong to the set $\{0 \mid 1\}$, we define what it means for a variable to be a field, instruction, or result.
-        Generic fields $f$ are defined as either an Instruction Field or a Result Field.
+        In the same way a boolean algebra would define a boolean variable to belong to the set $\{0 \mid 1\}$, we define what it means for a variable to be a field, input, output, or a $\Phi$ function.
+        Generic fields $f$ are defined as a superset of the wires surrounding the EXE/MEM state register, and the register itself.
         Instruction fields are the variables that represent instructions.
         In a statement \shdtt{$f_{i_{1}} =$ \textbf{ADD} x1 x2 x3}, the \textit{field} would be \shdtt{$f_{i_{1}}$}.
         Result fields are the same, except they are denoted with an 'r': \shdtt{$f_{r_{1}}$}.
         Instructions and Results follow a similar convention, and we have already defined one.
         The string \shdtt{$f_{i_{1}} =$ \textbf{ADD} x1 x2 x3} is an instruction itself, where the machine code is just \shdtt{\textbf{ADD} x1 x2 x3}.
+        Also note the addition of the $\Phi$ function.
+        We display the function as an obfuscator from some field to its convoluted form, though this can really be any function over a field.
 
         % Definitions table
         \begin{figure}
@@ -550,8 +551,8 @@ Finally, we will release this code, compiler, and language on GitHub.
       \subsubsection{Syntax of Predicates}\label{sec:spec:synt:pred}
         After the variables are defined, we move on to the \textit{Predicates}.
         The predicate language is how a programmer designs a test.
-        Upon first glance at Figure~\ref{fig:spec:synt:pred}, most viewers may see this as just a representation of a boolean algebra.
-        In fact, as touched upon in Section~\ref{sec:prior:ka:kat}, the predicate language is exactly a boolean algebra.
+        Figure~\ref{fig:spec:synt:pred} resembles that of a boolean algebra.
+        As touched upon in Section~\ref{sec:prior:ka:kat}, the predicate language is exactly a boolean algebra.
         The only potential difference is the \textit{Test} field, which is just a way to turn a field's value into a boolean one.
         The field \shdtt{$f_i$} is clearly not a boolean variable, but \shdtt{$f_i = f_i$} is\footnote{Most languages see this as an assignment.  In \sysname, assignments are done with the $\leftarrow$.}.
         Note that we define the variables \shdtt{$a, b$} to be predicate placeholders.
@@ -572,6 +573,10 @@ Finally, we will release this code, compiler, and language on GitHub.
           \caption{Predicates in \sysname act as a boolean algebra.}
           \label{fig:spec:synt:pred}
         \end{figure}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%% END 2SUBSEC 3.1.2  %%%
+      %%% SYNTAX: PREDICATES %%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%%
 
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       %%% BEGIN 2SUBSEC 3.1.3 %%%
@@ -579,6 +584,7 @@ Finally, we will release this code, compiler, and language on GitHub.
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Syntax of Policies}\label{sec:spec:synt:pol}
         \textit{Policies} are quite a bit more complicated than predicates.
+        %TODO: Monitor theory has changed
         The policy language is an augmentation of a Kleene algebra, where all the primitives are relevant to the monitor theory presented in Section~\ref{sec:prior:mon}.
         The formal definition of all these policies are found in Figure ~\ref{fig:spec:synt:pol}.
         \par
@@ -590,9 +596,16 @@ Finally, we will release this code, compiler, and language on GitHub.
         In \sysname, this means that the evaluation of the policy can continue.
         The actual function of this is explained in far more detail in Section~\ref{sec:spec:sem:pol}.
         \par
-        
-        \textit{Injection Action} and \textit{Injection Result} are just methods of inserting their respective fields.
-        Say the policy engineer would like to return a zero instead of whatever the actual computed value was, \textit{Injection Result} would be the correct tool.
+
+        \textit{Obfuscation} is where the $\Phi$ functions become useful.
+        Up until now, the functions were simply defined, but not yet useable.
+        As the monitor is intended to be compiled as a pair of arms that encase either side of the state register, we assume a $\Phi$ and its inverse are provided.
+        If a single-stream monitor is being compiled, a single function would suffice.
+        The compiler breaks these streams up as described anyway, so the interpolation is sound.
+        \par
+
+        \textit{Injection to State Register} and \textit{Injection to Memory Unit} are just methods of inserting their respective fields.
+        If the monitor determines that the address calculated by the Execution stage is illegal, the engineer could inject a zero address into either field to return some sort of garbage.
         \par
 
         We come to the final three policy rules, by far the most complex and powerful.
@@ -626,6 +639,10 @@ Finally, we will release this code, compiler, and language on GitHub.
           \caption{Syntax of Policies in \sysname}
           \label{fig:spec:synt:pol}
         \end{figure}
+      %%%%%%%%%%%%%%%%%%%%%%%%%
+      %%% END 2SUBSEC 3.1.3 %%%
+      %%% SYNTAX: POLICIES  %%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%
   %%%%%%%%%%%%%%%%%%%%%%
   %%% END SUBSEC 3.1 %%%
   %%% SYSTEM SYNTAX  %%%
@@ -636,35 +653,35 @@ Finally, we will release this code, compiler, and language on GitHub.
   %%% SYSTEM SEMANTICS %%%
   %%%%%%%%%%%%%%%%%%%%%%%%
     \subsection{Semantics}\label{sec:spec:sem}
-      Here we define what each of the syntactic rules described above actually mean.
+      Here we define how each of the rules are translated to in a theory of powersets.
+      We call attention to the very similar process of powerset construction in the theory of regular expressions.
       In effect, this is a translation of the language into what the monitor can do for any given input.
       As mentioned, we have a monitor that operates on two streams.
-      To visualize a machine that operates on streams, the analogy of an older dot-matrix printer can be used.
-      Many of my readers may not be familiar with this technology, so I provide a simplified version of this kind of printer in Figure~\ref{fig:spec:sem:sprint}.
-      With these kinds of printers, the paper comes perforated between every page.
-      All of the pages are connected and the stack is folded in a zig-zag.
-      There are guides on the sides of the papers, which act as their margins and assist the printer in moving the paper through its system.
-      The important thing to note about these kinds of printers is that they are continuous; there is always a stream of non-interruptable inputs \footnote{For simplicity, assume an infinite spool of this paper}.
+      %% TODO: This analogy seems unnecessary?
+      To visualize a machine that operates on streams, the analogy of an older dot-matrix printer can be used~\ref{fig:spec:sem:sprint}.
+      These kinds of printers are continuous; there is always a stream of non-interruptable inputs 
+      \footnote{For simplicity, assume an infinite spool of this paper}.
       This printer is a useful analogy of a single-stream machine.
       \par
 
-      If we bring the context back to \sysname, we must use Figure~\ref{fig:spec:sem:dprint}.
-      This image depicts a printer with two streams of paper, with the outputs for each on opposite sides.
-      \sysname operates in this way, and I have labeled the instruction and result streams accordingly.
-      The blank paper feeding into the input side of this printer can be thought of as the instructions being sent to the CPU.
-      \sysname is given an opportunity to modify, or ``print'' on, this stream.
-      The inputs stream exits the printer, is processed by the CPU, and returns the results stream.
-      This stream can be modified as well by the exact same device that also processed the inputs.
-      Unifying the input and output processing in this way means that communication, and thus decision making, is easier for complex stream processing.
-      \par
+      %% TODO: This section is obsolete because we don't operate on a CPU-user setup
+      % If we bring the context back to \sysname, we must use Figure~\ref{fig:spec:sem:dprint}.
+      % This image depicts a printer with two streams of paper, with the outputs for each on opposite sides.
+      % \sysname operates in this way, is labeled with the instruction and result streams accordingly.
+      % The blank paper feeding into the input side of this printer can be thought of as the instructions being sent to the CPU.
+      % \sysname is given an opportunity to modify, or ``print'' on, this stream.
+      % The inputs stream exits the printer, is processed by the CPU, and returns the results stream.
+      % This stream can be modified as well by the exact same device that also processed the inputs.
+      % Unifying the input and output processing in this way means that communication, and thus decision making, is easier for complex stream processing.
+      % \par
 
       For how the \textit{language} of \sysname works, we have to refer to the theory of regular expressive languages from Section~\ref{sec:prior:ka:star}.
       Recall that a regular expression, when compiled, returns a set of all possible satisfying strings.
-      For our purposes, we don't just look at satisfactory strings, but satisfactory \textit{streams} of strings.
-      We represent these streams as a set of all possible combinations of inputs.
-      Processing a regular expression over a standard alphabet of characters produces strings, but our input is no longer an alphabet of characters.
+      For our purposes, we don't just look at satisfactory instructions, but satisfactory \textit{streams} of instructions.
+      We represent these streams as a set of all possible combinations of ALU outputs.
+      Processing a regular expression over a standard alphabet of characters produces strings; our alphabet contains instructions.
       A regular expression that accepts all strings returns the \textit{Power Set} of the input alphabet.
-      Indeed, you can see in Figure~\ref{fig:spec:sem:pred} that the first entry is what the interpretation operator \shdtt{$\interp{\cdot}$}
+      Indeed, the first entry in Figure~\ref{fig:spec:sem:pred} is what the interpretation operator \shdtt{$\interp{\cdot}$}
       \footnote{The dot seen in the middle of the \shdtt{$\interp{}$} operator acts as a placeholder.
       In this case, it is \textit{not} a Sequential Concatenation.} means.
       A similar policy that accepts all possible inputs returns the power set of the input and output streams \shdtt{$P(\mathbf{Stream}(E))\times P(\mathbf{Stream}(M))$}.
@@ -688,12 +705,12 @@ Finally, we will release this code, compiler, and language on GitHub.
       %%% SEMANTICS: PREDICATES %%%
       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Semantics of Predicates}\label{sec:spec:sem:pred}
-        In this section, we will study just the Semantics of the predicates.
-        Please refer to Figure~\ref{fig:spec:sem:pred} for the mathematical definitions.
+        This section studies the Semantics of the predicates.
+        Please refer to Figure~\ref{fig:spec:sem:pred} for the definitions.
         Note that the \shdtt{$\defeq$} symbol means \textit{``is defined to be equal to''}.
-        So, \shdtt{$\interp{abc}\defeq jkl$} can be read as \textit{``The interpretation of abc is definitionally equivalent to jkl''}.
-        Also, the term \textit{ins} in this section refers to when either stream enters the monitor.
-        This is not to be confused with the actual \textit{instruction} stream, which becomes relevant when we discuss the policies in Section~\ref{sec:spec:sem:pol}.
+        So, \shdtt{$\interp{abc}\defeq jkl$} can be read as \textit{``The interpretation of abc is definition equivalent to jkl''}.
+        % Also, the term \textit{es} in this section refers to when either stream enters the monitor.
+        % This is not to be confused with the actual \textit{instruction} stream, which becomes relevant when we discuss the policies in Section~\ref{sec:spec:sem:pol}.
 
         \paragraph{Falsity:}
           \shdtt{$\interp{ 0 }(-, -)$} \par
@@ -701,30 +718,31 @@ Finally, we will release this code, compiler, and language on GitHub.
           There are no possible ins that can satisfy a policy of this nature.
 
         \paragraph{Identity:}
-          \shdtt{$\interp{ 1 }(\mathit{is}, \mathit{rs})$} \par
+          \shdtt{$\interp{ 1 }(\mathit{es}, \mathit{ms})$} \par
           The identity is satisfied by every possible input, and therefore returns everything.
           Any instructions or results sent through this monitor pass through completely unaltered.
+          The power set of the alphabet is also definition equivalent to the interpretation of Identity.
 
-        \paragraph{Test}
-          \shdtt{$\interp{ f=n }(\mathit{is}, \mathit{rs})$} \par
+        \paragraph{Test:}
+          \shdtt{$\interp{ f=n }(\mathit{es}, \mathit{ms})$} \par
           The test predicate is satisfied like an \shdtt{if} statement.
           Whenever this statement is satisfied, the policy composed of a test is also satisfied.
           Therefore, a monitor with a test lets all ins pass through which satisfy the given test.
         
-        \paragraph{Sum}
-          \shdtt{$\interp{ a + b }(\mathit{is}, \mathit{rs})$} \par
+        \paragraph{Sum:}
+          \shdtt{$\interp{ a + b }(\mathit{es}, \mathit{ms})$} \par
           The sum predicate operates in the same way as the boolean operator.
           For any policy summing two predicates, the inputs that satisfy a, b, or a \textit{and} b are considered to satisfy the entire predicate.
           These ins are passed through the monitor unchanged.
  
-        \paragraph{Product}
-          \shdtt{$\interp { a \cdot b }(\mathit{is}, \mathit{rs})$} \par
+        \paragraph{Product:}
+          \shdtt{$\interp { a \cdot b }(\mathit{es}, \mathit{ms})$} \par
           As with the sum predicate, the product operator acts like its boolean equivalent.
           Whenever both a \textit{and} b are satisfied, the policy is satisfied.
-          Ins which satisfy both a and b are passed through the monitor, while all others are simply destroyed\footnote{It may not be entirely accurate to say these ins are destroyed, but they are indeed not passed through to the outs.}.
+          Is which satisfy both a and b are passed through the monitor, while all others are ignored.
 
-        \paragraph{Negation}
-          \shdtt{$\interp { \neg a }(\mathit{is}, \mathit{rs})$} \par
+        \paragraph{Negation:}
+          \shdtt{$\interp { \neg a }(\mathit{es}, \mathit{ms})$} \par
           Negation is the final predicate to be examined.
           It is satisfied whenever the argument, a, is not.
           The negation of the identity would therefore return the falsity: \shdtt{$\interp{ \neg 1 }\defeq \interp{0}$}.
@@ -782,13 +800,71 @@ Finally, we will release this code, compiler, and language on GitHub.
               \\
           \end{align*}}
           \caption{The semantics of predicates in \sysname.  While predicates remain unchanged from \oldname, the theory changes slightly}
-          \label{fig:spec:sem:pol}
+          \label{fig:spec:sem:pred}
         \end{figure}
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%% END 2SUBSEC 3.2.1     %%%
+      %%% SEMANTICS: PREDICATES %%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
       %%% BEGIN 2SUBSEC 3.2.2 %%%
       %%% SEMANTICS: POLICIES %%%
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \subsubsection{Semantics of Policies:}\label{sec:garuda:sem:pol}
+        For policy semantics, it is important to acknowledge the differences between the execution and memory streams.
+        These are denoted by \shdtt{$\mathbf{Stream}(E)$} and \shdtt{$\mathbf{Stream}(M)$} respectively.
+        \shdtt{$S_e$} and \shdtt{$S_m$} are simply the sets of all in/outs for each stream.
+        Refer to Figure~\ref{fig:garuda:sem:pol} for the mathematical definitions.
+
+
+        \paragraph{Injection to State Register:}
+          \shdtt{$\interp { inj_{i}(i) }(\mathit{es}, \mathit{ms})$} \par
+          Injection to State Register will inject an instruction into the stream.
+          Imagine if the printer could add its own page to the middle of a multi-page job.
+          This is pretty much the same as what injecting a value does.
+          The injected data are not in the input stream for the instructions, but appears on the output.
+
+        \paragraph{Injection to Memory Unit:}
+          \shdtt{$\interp { inj_{r}(r) }(\mathit{es}, \mathit{ms})$} \par
+          Injecting to the memory unit acts the same as injecting data to the state register.
+          Rather, it injects on the register-to-memory stream.
+
+
+        \paragraph{Modification:}
+          \shdtt{$\interp { f \leftarrow n }(\mathit{es}, \mathit{ms})$} \par
+          Modification is \oldname's system for assigning a variable, or field.
+          Modification can be used if the programmer would like to redirect a sensitive result to a secure address.
+          It can also be used to temporarily store a value to be re-inserted later.
+
+        \paragraph{Policy Union:}
+          \shdtt{$\interp { p + q }(\mathit{es}, \mathit{ms})$} \par
+          A policy union is when a programmer wishes to have two, separare policies operate in parallel.
+          Often times, only the $p$ or $q$ policies are satisfied, and not both.
+          This can be used in decision making or if the user wants to apply one policy to the results and a different one to the actions.
+          In this case, they would also use the slicing rules.
+
+        \paragraph{Policy Concatenation:}
+          \shdtt{$\interp { p \cdot q }(\mathit{es}, \mathit{ms})$} \par
+          Policy concatenation is used when the user wants to design a policy that has specific prerequisites to trigger.
+          A policy may modify all branches, but only \textit{after} a load instruction has passed through.
+          This allows for a granular, state-machine-like implementation of multiple policies at once.
+
+
+        \paragraph{Filter:}
+          \shdtt{$\interp{\mathsf{filter}\ f}(S)$} \par
+          The filter is a function defined to assist in describing the semantics of test.
+          It is included at the end of policy syntax definitions, as it also applies to the use of ``test'' as a policy.
+          While the keyword is never used, the test policy functions the same as the test predicate.
+          Filter is explained by its namesake.
+          It is an operation over a set $S$ which returns all elements that satisfy the conditional $f$.
+
+        \paragraph{Map:}
+          \shdtt{$\interp{\mathsf{map}\ g}(S)$} \par
+          The map is very similar to the filter.
+          Unlike filter, which takes a conditional $f$, map takes a function $g$.
+          This function is applied to all elements in the set $S$, returning a modified set $S'$.
+
       \subsubsection{Semantics of Policies}\label{sec:spec:sem:pol}
         \begin{figure}
           \centering
@@ -810,13 +886,13 @@ Finally, we will release this code, compiler, and language on GitHub.
               & \mathsf{in}\
               (\{\obf{e}\}, \{m\})
               \\
-            % Injection Action
+            % Injection to State Register
             \interp { inj_{SR}(e) }(es, ms)
               \triangleq\ &
               (\{e : es\}, \{ms\}) 
               % or ::?  ;i sequential
               \\
-            % Injection Result
+            % Injection to Memory Unit
             \interp { inj_{Mi}(m) }(es, ms)
               \triangleq\ &
               (\{es\},\{m : ms\})

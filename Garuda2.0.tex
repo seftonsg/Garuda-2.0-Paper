@@ -833,13 +833,13 @@ Finally, we will release this code, compiler, and language on GitHub.
 
         \paragraph{Modification:}
           \shdtt{$\interp { f \leftarrow n }(\mathit{es}, \mathit{ms})$} \par
-          Modification is \oldname's system for assigning a variable, or field.
+          Modification is \sysname's system for assigning a variable, or field.
           Modification can be used if the programmer would like to redirect a sensitive result to a secure address.
           It can also be used to temporarily store a value to be re-inserted later.
 
         \paragraph{Policy Union:}
           \shdtt{$\interp { p + q }(\mathit{es}, \mathit{ms})$} \par
-          A policy union is when a programmer wishes to have two, separare policies operate in parallel.
+          A policy union is when a programmer wishes to have two separare policies operate in parallel.
           Often times, only the $p$ or $q$ policies are satisfied, and not both.
           This can be used in decision making or if the user wants to apply one policy to the results and a different one to the actions.
           In this case, they would also use the slicing rules.

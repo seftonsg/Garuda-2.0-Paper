@@ -811,6 +811,60 @@ Finally, we will release this code, compiler, and language on GitHub.
       %%% BEGIN 2SUBSEC 3.2.2 %%%
       %%% SEMANTICS: POLICIES %%%
       %%%%%%%%%%%%%%%%%%%%%%%%%%%
+      \subsubsection{Semantics of Policies:}\label{sec:garuda:sem:pol}
+        For policy semantics, it is important to acknowledge the differences between the execution and memory streams.
+        These are denoted by \shdtt{$\mathbf{Stream}(E)$} and \shdtt{$\mathbf{Stream}(M)$} respectively.
+        \shdtt{$S_e$} and \shdtt{$S_m$} are simply the sets of all in/outs for each stream.
+        Refer to Figure~\ref{fig:garuda:sem:pol} for the mathematical definitions.
+
+
+        \paragraph{Injection to State Register:}
+          \shdtt{$\interp { inj_{i}(i) }(\mathit{es}, \mathit{ms})$} \par
+          Injection to State Register will inject an instruction into the stream.
+          Imagine if the printer could add its own page to the middle of a multi-page job.
+          This is pretty much the same as what injecting a value does.
+          The injected data are not in the input stream for the instructions, but appears on the output.
+
+        \paragraph{Injection to Memory Unit:}
+          \shdtt{$\interp { inj_{r}(r) }(\mathit{es}, \mathit{ms})$} \par
+          Injecting to the memory unit acts the same as injecting data to the state register.
+          Rather, it injects on the register-to-memory stream.
+
+
+        \paragraph{Modification:}
+          \shdtt{$\interp { f \leftarrow n }(\mathit{es}, \mathit{ms})$} \par
+          Modification is \oldname's system for assigning a variable, or field.
+          Modification can be used if the programmer would like to redirect a sensitive result to a secure address.
+          It can also be used to temporarily store a value to be re-inserted later.
+
+        \paragraph{Policy Union:}
+          \shdtt{$\interp { p + q }(\mathit{es}, \mathit{ms})$} \par
+          A policy union is when a programmer wishes to have two, separare policies operate in parallel.
+          Often times, only the $p$ or $q$ policies are satisfied, and not both.
+          This can be used in decision making or if the user wants to apply one policy to the results and a different one to the actions.
+          In this case, they would also use the slicing rules.
+
+        \paragraph{Policy Concatenation:}
+          \shdtt{$\interp { p \cdot q }(\mathit{es}, \mathit{ms})$} \par
+          Policy concatenation is used when the user wants to design a policy that has specific prerequisites to trigger.
+          A policy may modify all branches, but only \textit{after} a load instruction has passed through.
+          This allows for a granular, state-machine-like implementation of multiple policies at once.
+
+
+        \paragraph{Filter:}
+          \shdtt{$\interp{\mathsf{filter}\ f}(S)$} \par
+          The filter is a function defined to assist in describing the semantics of test.
+          It is included at the end of policy syntax definitions, as it also applies to the use of ``test'' as a policy.
+          While the keyword is never used, the test policy functions the same as the test predicate.
+          Filter is explained by its namesake.
+          It is an operation over a set $S$ which returns all elements that satisfy the conditional $f$.
+
+        \paragraph{Map:}
+          \shdtt{$\interp{\mathsf{map}\ g}(S)$} \par
+          The map is very similar to the filter.
+          Unlike filter, which takes a conditional $f$, map takes a function $g$.
+          This function is applied to all elements in the set $S$, returning a modified set $S'$.
+
       \subsubsection{Semantics of Policies}\label{sec:spec:sem:pol}
         \begin{figure}
           \centering
@@ -832,13 +886,13 @@ Finally, we will release this code, compiler, and language on GitHub.
               & \mathsf{in}\
               (\{\obf{e}\}, \{m\})
               \\
-            % Injection Action
+            % Injection to State Register
             \interp { inj_{SR}(e) }(es, ms)
               \triangleq\ &
               (\{e : es\}, \{ms\}) 
               % or ::?  ;i sequential
               \\
-            % Injection Result
+            % Injection to Memory Unit
             \interp { inj_{Mi}(m) }(es, ms)
               \triangleq\ &
               (\{es\},\{m : ms\})

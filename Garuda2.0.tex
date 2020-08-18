@@ -1011,9 +1011,9 @@ Finally, we will release this code, compiler, and language on GitHub.
     %%% INTERMEDIATE     %%%
     %%%%%%%%%%%%%%%%%%%%%%%%
     \subsection{The Intermediate Language}\label{sec:comp:int}
-      Refer to Figure~\ref{fig:compile:int} through this explanation for the Extended BNF~\cite{ISO14977} definition of the language.
+      Refer to Figure~\ref{fig:comp:int} through this explanation for the Extended BNF~\cite{ISO14977} definition of the language.
       We define values and registers as the primitives for the language.
-      Values are somewhat similar to the instruction and result fields of \oldname in Figure~\ref{fig:garuda:defn}.
+      Values are somewhat similar to the instruction and result fields of \oldname in Figure~\ref{fig:spec:synt:defn}.
       We then define the expression syntax for this language.
       Most of these are close abstractions of common functions performed in HDLs.
       \textit{Read Reg} and \textit{Write Value to Reg} are self explanatory; an expression of these rules would read from $b$ or write $v$ to $b$, respectively.
@@ -1219,7 +1219,7 @@ Finally, we will release this code, compiler, and language on GitHub.
         Indeed, a set of intermediary streams are created first.
         These streams are used to link each compiled policy in series.
         These newly compiled policies need only to use the concatenation feature of the intermediate language.
-        
+
         \begin{figure}
           \begin{align*}
             % Inject Instruction

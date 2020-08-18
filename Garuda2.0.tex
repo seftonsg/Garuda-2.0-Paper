@@ -1035,6 +1035,7 @@ Finally, we will release this code, compiler, and language on GitHub.
 
       Finally, we define \oldname's ``Kleene Star''.
       The \textit{Hardwire} rule acts similar to the Zero Register from Section~\ref{sec:proofs:nwtz}.
+      % TODO: PROPER LINK!
       Because \oldname operates on streams, a Hardwire can be used to mimic the effect of a true Kleene Star.
       Recall from Section~\ref{sec:prior:ka:star} that the Kleene Star is used to denote the repetition of a regular expression.
       The regular expression \shdtt{(a)*} is satisfied by the strings \shdtt{\{'a', 'aa', $\dots$\}}.
@@ -1084,7 +1085,7 @@ Finally, we will release this code, compiler, and language on GitHub.
       We define a function $\mathbf{C}$ to be the compilation of some predicate or policy in \sysname to the intermediate language.
       $\mathbf{C}$ operates on the four ports of the \sysname monitor.
       These consist of the processing done after the Execution stage, before the Memory stage, and their respective altered streams.
-      Table~\ref{tab:compile:compile:ports} summarizes each port.
+      Table~\ref{tab:comp:comp:ports} summarizes each port.
       Assume all $\mathbf{C}$ are short for $\mathbf{C}_{(EXE,\obf{EXE},\obf{MEM},MEM)}$ if unspecified.
       % Would it be best to flip MEM and MEM' to show the return to the original output of EXE?
       \begin{table}
@@ -1194,7 +1195,7 @@ Finally, we will release this code, compiler, and language on GitHub.
     %%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Compiling Policies}\label{sec:comp:comp:pol}
         Compilation of policies to the intermediate language is not that much more complicated than the predicates.
-        Starting immediately with the slices, Figure~\ref{fig:compile:compile:pol} shows that each only needs to declare two new buffers.
+        Starting immediately with the slices, Figure~\ref{fig:comp:comp:pol} shows that each only needs to declare two new buffers.
         Slice Actions creates two bogus results buffers and compiles the policy \shdtt{$p$} over the original instruction stream and the new results stream.
         Once this has been compiled, the original results stream overwrites the bogus stream left over from compiling to the instructions.
         Slicing Results operates exactly opposite.

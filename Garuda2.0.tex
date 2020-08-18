@@ -255,6 +255,7 @@ Finally, we will release this code, compiler, and language on GitHub.
 %%% INTRODUCTION  %%%
 %%%%%%%%%%%%%%%%%%%%%
 
+
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% BEGIN SECTION 2 %%%
 %%% PRIOR WORK      %%%
@@ -962,6 +963,8 @@ Finally, we will release this code, compiler, and language on GitHub.
 %%% END OF SECTION 3 %%%
 %%% GARUDA SPECIFICS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%
+
+
 %%%%%%%%%%%%%%%%%%%%%%
 %%% BEGIN SECTON 4 %%%
 %%% PROOFS         %%%
@@ -997,6 +1000,7 @@ Finally, we will release this code, compiler, and language on GitHub.
     %%%%%%%%%%%%%%%%%%%%%%%%
     %%% Demonstrate a thwarted attack
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%
 %%% BEGIN SECTON 5   %%%
 %%% FULL COMPILATION %%%
@@ -1007,7 +1011,41 @@ Finally, we will release this code, compiler, and language on GitHub.
     %%% INTERMEDIATE     %%%
     %%%%%%%%%%%%%%%%%%%%%%%%
     \subsection{The Intermediate Language}\label{sec:comp:int}
+      Refer to Figure~\ref{fig:compile:int} through this explanation for the Extended BNF~\cite{ISO14977} definition of the language.
+      We define values and registers as the primitives for the language.
+      Values are somewhat similar to the instruction and result fields of \oldname in Figure~\ref{fig:garuda:defn}.
+      We then define the expression syntax for this language.
+      Most of these are close abstractions of common functions performed in HDLs.
+      \textit{Read Reg} and \textit{Write Value to Reg} are self explanatory; an expression of these rules would read from $b$ or write $v$ to $b$, respectively.
+      \textit{Assignment} is the rule the programmer would use to define a variable.
+      Instead of declaring a variable and then assigning it a value, \textit{Assignment} does both and explicitly declares its scope.
+      With this implementation, we do not have to check the liveness of a variable.
+      Otherwise, the compilation monad would be significantly more complex.
+      \textit{Parallel} is how the programmer would define two expressions that run without depending on each other.
+      If an electrical engineer declares two resistors in parallel, they would function the same as the Parallel rule.
+      More frequently, this rule is a stepping stone for the Sum predicate and Choice policy.
+      We then implement a function-like behavior.
+      The \textit{Apply Function} rule applies a function $f$ to an expression $e_1$.
+      Branches are implemented with the \textit{Conditional} rule.
+      Conveniently, Coq has a pseudo-primitive implementation of branching.
+      The \textit{Product} of two expressions acts the same as it does in a boolean algebra.
+      \textit{Concatenation} functions the same as a circuit with two resistors in serial.
+      If the engineer has two not gates in serial, the Concatenation rule would apply.
+      \par
 
+      Finally, we define \oldname's ``Kleene Star''.
+      The \textit{Hardwire} rule acts similar to the Zero Register from Section~\ref{sec:proofs:nwtz}.
+      Because \oldname operates on streams, a Hardwire can be used to mimic the effect of a true Kleene Star.
+      Recall from Section~\ref{sec:prior:ka:star} that the Kleene Star is used to denote the repetition of a regular expression.
+      The regular expression \shdtt{(a)*} is satisfied by the strings \shdtt{\{'a', 'aa', $\dots$\}}.
+      The stream arguments of \oldname can be viewed as an infinite string.
+      An expression which forwards an input to the output would look something like this:
+      \shdtt{$let\ (x = read(input\_reg))\ in\ (write(output\_reg,x))$}.
+      The input is assigned to the variable $x$, which is used in the $write$ command to be immediately output.
+      This expression only runs once before the program looks for the next expression.
+      If we \textit{Hardwire} this expression, it would act as an infinite loop that forwards \textit{all} inputs to the outputs:
+      \shdtt{$forever\ (let\ (x = read(input\_reg))\ in\ (write(output\_reg,x)))$}.
+      Once the expression is used it will repeat itself.
       \begin{figure}
         \centering
         \begin{tabular}{l r r l l}
@@ -1070,6 +1108,32 @@ Finally, we will release this code, compiler, and language on GitHub.
       %%% PREDICATES         %%%
       %%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Compiling Predicates}\label{sec:comp:comp:pred}
+        We begin by defining the compilation of Falsity in Figure~\ref{fig:compile:compile:pred}.
+        As would be intuitive, the Falsity does not pass any of its inputs to the outputs.
+        As \oldname must process its current element before it may move on to the next, Falsity is compiled to output bogus values.
+        The Identity simply passes all values straight through.
+        Compiling the Filter is the first use of the Conditional of the intermediate language.
+        Filter applies a conditional test to each stream.
+        If the condition is satisfied, then it operates like the Identity and passes through the input.
+        If the condition fails, Filter applies the Falsity to the respective stream.
+        \par
+
+        Compiling Predicate Addition is a little more complicated.
+        We explicitly include the \shdtt{$\mathsf{test}$} to help describe how these next few rules work.
+        First, Predicate Addition defines new buffers to be used.
+        Each stream is then split, or \textit{De-Multiplexed}.
+        It then compiles predicate \shdtt{$\mathsf{a}$} over the first pair of streams and predicate \shdtt{$\mathsf{b}$} over the second pair of streams.
+        Finally, it links the respective instruction and result output streams together with a \textit{Multiplexer}.
+        A multiplexer usually needs explicit direction on which of the two inputs to forward to the output.
+        However, in \oldname, the difference is irrelevant.
+        To avoid back propagation, we just forward whichever stream produces a valid output, with preference towards the first in interest of determinism.
+        \par
+
+        Predicate Product has a direct analog in the intermediate language, so its compilation is fairly simple.
+        Predicate Negation, however, is a bit more complicated\footnote{Just kidding; I promise my jokes are usually funnier.}.
+        It implements an inverse conditional.
+        Whenever behavior a Filter over \shdtt{$\mathsf{a}$} exhibits, Predicate Negation produces the opposite output.
+
         \begin{figure}
           \begin{align*}
             % Falsity
@@ -1129,6 +1193,33 @@ Finally, we will release this code, compiler, and language on GitHub.
     %%% POLICIES           %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Compiling Policies}\label{sec:comp:comp:pol}
+        Compilation of policies to the intermediate language is not that much more complicated than the predicates.
+        Starting immediately with the slices, Figure~\ref{fig:compile:compile:pol} shows that each only needs to declare two new buffers.
+        Slice Actions creates two bogus results buffers and compiles the policy \shdtt{$p$} over the original instruction stream and the new results stream.
+        Once this has been compiled, the original results stream overwrites the bogus stream left over from compiling to the instructions.
+        Slicing Results operates exactly opposite.
+        It creates a bogus instructions stream to use temporarily in the compilation of policy \shdtt{$p$}.
+        Once compiled, the original instructions stream overwrites the bogus and is combined with the compiled results stream.
+        \par
+
+        Injections are fairly simple.
+        In fact, injections do not even have to perform any computations on the streams.
+        They simply write the argument to the relevant stream.
+        For example, \shdtt{$inj_i(\mathbf{NOOP})$} writes a no-operation instruction to the output of the instruction stream.
+        \par
+
+        Compiling the Assignment policy takes advantage of the appropriately-named Assignment intermediary.
+        It defines two variables \shdtt{$i'$} and \shdtt{$r'$} defined by applying function \shdtt{$f$} to their respective inputs.
+        These two variables are then written to the output of each stream.
+        Policy Nondeterministic Choice is the equivalent of running two policies in parallel.
+        Compiling this policy is similar to that of the summation predicate.
+        First, each policy \shdtt{$p$} and \shdtt{$q$} are compiled to their own expressions and set to the variables \shdtt{$e_p$} and \shdtt{$e_q$} respectively.
+        These two policies are then multiplexed in the same way as summation.
+        Policy Sequence, or Sequential Concatenation, is compiled like two policies operating in series.
+        Indeed, a set of intermediary streams are created first.
+        These streams are used to link each compiled policy in series.
+        These newly compiled policies need only to use the concatenation feature of the intermediate language.
+        
         \begin{figure}
           \begin{align*}
             % Inject Instruction
@@ -1164,7 +1255,10 @@ Finally, we will release this code, compiler, and language on GitHub.
           \caption{Compilation of \sysname policies into the intermediate language.}
           \label{fig:comp:comp:pol}
         \end{figure}
-
+%%%%%%%%%%%%%%%%%%%%%%%%
+%%% END SECTON 5     %%%
+%%% FULL COMPILATION %%%
+%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 

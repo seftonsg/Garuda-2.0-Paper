@@ -1112,6 +1112,30 @@ Finally, we will release this code, compiler, and language on GitHub.
       %%% PREDICATES         %%%
       %%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Compiling Predicates}\label{sec:comp:comp:pred}
+
+        \textbf{TODO: INSERT NOTES ON THE FOLLOWING}
+
+        \paragraph{Falsity:}
+          $\mathbf{C}[0]$ \par
+          %\shdtt{$\mathbf{C}[0]$} \par
+
+        \paragraph{Identity:}
+          $\mathbf{C}[0]$ \par
+
+        \paragraph{Test:}
+          $\mathbf{C}[0]$ \par
+
+        \paragraph{Sum:}
+          $\mathbf{C}[0]$ \par
+
+        \paragraph{Product:}
+          $\mathbf{C}[0]$ \par
+
+        \paragraph{Negation:}
+          $\mathbf{C}[0]$ \par
+
+
+
         We begin by defining the compilation of Falsity in Figure~\ref{fig:comp:comp:pred}.
         As would be intuitive, the Falsity does not pass any of its inputs to the outputs.
         As \oldname must process its current element before it may move on to the next, Falsity is compiled to output bogus values.
@@ -1192,11 +1216,32 @@ Finally, we will release this code, compiler, and language on GitHub.
           \label{fig:comp:comp:pred}
         \end{figure}
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% BEGIN SECTON 5.2.2 %%%
-    %%% POLICIES           %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%% BEGIN SECTON 5.2.2 %%%
+      %%% POLICIES           %%%
+      %%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Compiling Policies}\label{sec:comp:comp:pol}
+
+        \textbf{TODO: INSERT NOTES ON THE FOLLOWING}
+
+        \paragraph{Obfuscation:}
+          $\mathbf{C}[0]$ \par
+
+        \paragraph{Injection to State Register:}
+          $\mathbf{C}[0]$ \par
+
+        \paragraph{Injection to Memory Unit:}
+          $\mathbf{C}[0]$ \par
+
+        \paragraph{Modification:}
+          $\mathbf{C}[0]$ \par
+
+        \paragraph{Policy Union:}
+          $\mathbf{C}[0]$ \par
+
+        \paragraph{Policy Concatenation:}
+          $\mathbf{C}[0]$ \par
+
         Compilation of policies to the intermediate language is not that much more complicated than the predicates.
         Starting immediately with the slices, Figure~\ref{fig:comp:comp:pol} shows that each only needs to declare two new buffers.
         Slice Actions creates two bogus results buffers and compiles the policy \shdtt{$p$} over the original instruction stream and the new results stream.

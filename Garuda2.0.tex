@@ -1214,52 +1214,45 @@ Finally, we will release this code, compiler, and language on GitHub.
       %%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Compiling Policies}\label{sec:comp:comp:pol}
 
-        \textbf{TODO: INSERT NOTES ON THE FOLLOWING}
+        Compilation of policies to the intermediate language is not that much more complicated than the predicates.
+        Starting immediately with the slices, Figure~\ref{fig:comp:comp:pol} shows that each only needs to declare two new buffers.
+
+        \textbf{TODO: Find a better way to reference ~\ref{fig:comp:comp:pol}}\par
+        \textbf{TODO: Also... capitalization?}
 
         \paragraph{Obfuscation:}
           $\mathbf{C}[\cdot]$ \par\noindent
 
         \paragraph{Injection to State Register:}
           $\mathbf{C}[inj_{SR}V]$ \par\noindent
+          Injections are fairly simple.
+          State Register injections temporarily override the state register for a cycle while triggering a stall in the previous stages.
+          Think of it as splitting the instruction stream and forcing in a new instruction before continuing.
 
         \paragraph{Injection to Memory Unit:}
           $\mathbf{C}[inj_{Mi}V]$ \par\noindent
+          Injection to the Memory Unit is exactly the same as to a state register.
+          These two can be used strategically to fool a trojan within the state register.
 
         \paragraph{Modification:}
           $\mathbf{C}[f \leftarrow n]$ \par\noindent
+          Compiling the Assignment policy takes advantage of the appropriately-named Assignment intermediary.
+          It defines two variables \shdtt{$i'$} and \shdtt{$r'$} defined by applying function \shdtt{$f$} to their respective inputs.
+          These two variables are then written to the output of each stream.
 
         \paragraph{Policy Union:}
           $\mathbf{C}[p + q]$ \par\noindent
+          Policy Nondeterministic Choice is the equivalent of running two policies in parallel.
+          Compiling this policy is similar to that of the summation predicate.
+          First, each policy \shdtt{$p$} and \shdtt{$q$} are compiled to their own expressions and set to the variables \shdtt{$e_p$} and \shdtt{$e_q$} respectively.
+          These two policies are then multiplexed in the same way as summation.
 
         \paragraph{Policy Concatenation:}
           $\mathbf{C}[p \cdot q]$ \par\noindent
-
-        Compilation of policies to the intermediate language is not that much more complicated than the predicates.
-        Starting immediately with the slices, Figure~\ref{fig:comp:comp:pol} shows that each only needs to declare two new buffers.
-        Slice Actions creates two bogus results buffers and compiles the policy \shdtt{$p$} over the original instruction stream and the new results stream.
-        Once this has been compiled, the original results stream overwrites the bogus stream left over from compiling to the instructions.
-        Slicing Results operates exactly opposite.
-        It creates a bogus instructions stream to use temporarily in the compilation of policy \shdtt{$p$}.
-        Once compiled, the original instructions stream overwrites the bogus and is combined with the compiled results stream.
-        \par
-
-        Injections are fairly simple.
-        In fact, injections do not even have to perform any computations on the streams.
-        They simply write the argument to the relevant stream.
-        For example, \shdtt{$inj_i(\mathbf{NOOP})$} writes a no-operation instruction to the output of the instruction stream.
-        \par
-
-        Compiling the Assignment policy takes advantage of the appropriately-named Assignment intermediary.
-        It defines two variables \shdtt{$i'$} and \shdtt{$r'$} defined by applying function \shdtt{$f$} to their respective inputs.
-        These two variables are then written to the output of each stream.
-        Policy Nondeterministic Choice is the equivalent of running two policies in parallel.
-        Compiling this policy is similar to that of the summation predicate.
-        First, each policy \shdtt{$p$} and \shdtt{$q$} are compiled to their own expressions and set to the variables \shdtt{$e_p$} and \shdtt{$e_q$} respectively.
-        These two policies are then multiplexed in the same way as summation.
-        Policy Sequence, or Sequential Concatenation, is compiled like two policies operating in series.
-        Indeed, a set of intermediary streams are created first.
-        These streams are used to link each compiled policy in series.
-        These newly compiled policies need only to use the concatenation feature of the intermediate language.
+          Policy Sequence, or Sequential Concatenation, is compiled like two policies operating in series.
+          Indeed, a set of intermediary streams are created first.
+          These streams are used to link each compiled policy in series.
+          These newly compiled policies need only to use the concatenation feature of the intermediate language.
 
         \begin{figure}
           \begin{align*}

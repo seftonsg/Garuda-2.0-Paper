@@ -1112,55 +1112,47 @@ Finally, we will release this code, compiler, and language on GitHub.
       %%%%%%%%%%%%%%%%%%%%%%%%%%
       \subsubsection{Compiling Predicates}\label{sec:comp:comp:pred}
 
-        \textbf{TODO: INSERT NOTES ON THE FOLLOWING}
+        \textbf{TODO: Check Paragraphs}
+
+        We begin by defining the compilation of Falsity in Figure~\ref{fig:comp:comp:pred}.
 
         \paragraph{Falsity:}
           $\mathbf{C}[0]$ \par\noindent
           %\shdtt{$\mathbf{C}[0]$} \par
+          Falsity does not pass any of its inputs to the outputs.
+          As \sysname must process its current element before it may move on to the next, Falsity is compiled to output bogus values.
 
         \paragraph{Identity:}
           $\mathbf{C}[1]$ \par\noindent
           The Identity simply passes all values straight through.
 
         \paragraph{Test:}
-          $\mathbf{C}[f = n]$ \par
+          $\mathbf{C}[f = n]$ \par\noindent
+          Compiling the Filter is the first use of the Conditional of the intermediate language.
+          Filter applies a conditional test to each stream.
+          If the condition is satisfied, then it operates like the Identity and passes through the input.
+          If the condition fails, Filter applies the Falsity to the respective stream.
 
         \paragraph{Sum:}
-          $\mathbf{C}[\mathsf{test}(a + b)]$ \par
+          $\mathbf{C}[\mathsf{test}(a + b)]$ \par\noindent
+          Compiling Predicate Addition is a little more complicated.
+          We explicitly include the \shdtt{$\mathsf{test}$} to help describe how these next few rules work.
+          First, Predicate Addition defines new buffers to be used.
+          Each stream is then split, or \textit{De-Multiplexed}.
+          It then compiles predicate \shdtt{$\mathsf{a}$} over the first pair of streams and predicate \shdtt{$\mathsf{b}$} over the second pair of streams.
+          Finally, it links the respective instruction and result output streams together with a \textit{Multiplexer}.
+          A multiplexer usually needs explicit direction on which of the two inputs to forward to the output.
+          However, in \oldname, the difference is irrelevant.
+          To avoid back propagation, we just forward whichever stream produces a valid output, with preference towards the first in interest of determinism.
 
         \paragraph{Product:}
-          $\mathbf{C}[\mathsf{test}(a \cdot b)]$ \par
+          $\mathbf{C}[\mathsf{test}(a \cdot b)]$ \par\noindent
+          Predicate Product has a direct analog in the intermediate language, so its compilation is fairly simple.
 
         \paragraph{Negation:}
-          $\mathbf{C}[\neg a]$ \par
-
-
-
-        We begin by defining the compilation of Falsity in Figure~\ref{fig:comp:comp:pred}.
-        As would be intuitive, the Falsity does not pass any of its inputs to the outputs.
-        As \oldname must process its current element before it may move on to the next, Falsity is compiled to output bogus values.
-        The Identity simply passes all values straight through.
-        Compiling the Filter is the first use of the Conditional of the intermediate language.
-        Filter applies a conditional test to each stream.
-        If the condition is satisfied, then it operates like the Identity and passes through the input.
-        If the condition fails, Filter applies the Falsity to the respective stream.
-        \par
-
-        Compiling Predicate Addition is a little more complicated.
-        We explicitly include the \shdtt{$\mathsf{test}$} to help describe how these next few rules work.
-        First, Predicate Addition defines new buffers to be used.
-        Each stream is then split, or \textit{De-Multiplexed}.
-        It then compiles predicate \shdtt{$\mathsf{a}$} over the first pair of streams and predicate \shdtt{$\mathsf{b}$} over the second pair of streams.
-        Finally, it links the respective instruction and result output streams together with a \textit{Multiplexer}.
-        A multiplexer usually needs explicit direction on which of the two inputs to forward to the output.
-        However, in \oldname, the difference is irrelevant.
-        To avoid back propagation, we just forward whichever stream produces a valid output, with preference towards the first in interest of determinism.
-        \par
-
-        Predicate Product has a direct analog in the intermediate language, so its compilation is fairly simple.
-        Predicate Negation, however, is a bit more complicated\footnote{Just kidding; I promise my jokes are usually funnier.}.
-        It implements an inverse conditional.
-        Whenever behavior a Filter over \shdtt{$\mathsf{a}$} exhibits, Predicate Negation produces the opposite output.
+          $\mathbf{C}[\neg a]$ \par\noindent
+          Predicate Negation just inverts the behavior of the input.
+          Negation can be reduced to a logical \textit{NOT} gate.
 
         \begin{figure}
           \begin{align*}
@@ -1271,6 +1263,10 @@ Finally, we will release this code, compiler, and language on GitHub.
 
         \begin{figure}
           \begin{align*}
+            % Obfuscate
+            \mathbf{C}[obf]\
+              =\ &
+              TODO: COMPILE?\\
             % Inject Instruction
             \mathbf{C}[inj_{SR}V]\ 
               =\ &

@@ -714,36 +714,36 @@ Finally, we will release this code, compiler, and language on GitHub.
         % This is not to be confused with the actual \textit{instruction} stream, which becomes relevant when we discuss the policies in Section~\ref{sec:spec:sem:pol}.
 
         \paragraph{Falsity:}
-          \shdtt{$\interp{ 0 }(-, -)$} \par
+          \shdtt{$\interp{ 0 }(-, -)$} \par\noindent
           The falsity predicate simply returns nothing.
           There are no possible ins that can satisfy a policy of this nature.
 
         \paragraph{Identity:}
-          \shdtt{$\interp{ 1 }(\mathit{es}, \mathit{ms})$} \par
+          \shdtt{$\interp{ 1 }(\mathit{es}, \mathit{ms})$} \par\noindent
           The identity is satisfied by every possible input, and therefore returns everything.
           Any instructions or results sent through this monitor pass through completely unaltered.
           The power set of the alphabet is also definition equivalent to the interpretation of Identity.
 
         \paragraph{Test:}
-          \shdtt{$\interp{ f=n }(\mathit{es}, \mathit{ms})$} \par
+          \shdtt{$\interp{ f=n }(\mathit{es}, \mathit{ms})$} \par\noindent
           The test predicate is satisfied like an \shdtt{if} statement.
           Whenever this statement is satisfied, the policy composed of a test is also satisfied.
           Therefore, a monitor with a test lets all ins pass through which satisfy the given test.
         
         \paragraph{Sum:}
-          \shdtt{$\interp{ a + b }(\mathit{es}, \mathit{ms})$} \par
+          \shdtt{$\interp{ a + b }(\mathit{es}, \mathit{ms})$} \par\noindent
           The sum predicate operates in the same way as the boolean operator.
           For any policy summing two predicates, the inputs that satisfy a, b, or a \textit{and} b are considered to satisfy the entire predicate.
           These ins are passed through the monitor unchanged.
  
         \paragraph{Product:}
-          \shdtt{$\interp { a \cdot b }(\mathit{es}, \mathit{ms})$} \par
+          \shdtt{$\interp { a \cdot b }(\mathit{es}, \mathit{ms})$} \par\noindent
           As with the sum predicate, the product operator acts like its boolean equivalent.
           Whenever both a \textit{and} b are satisfied, the policy is satisfied.
           Is which satisfy both a and b are passed through the monitor, while all others are ignored.
 
         \paragraph{Negation:}
-          \shdtt{$\interp { \neg a }(\mathit{es}, \mathit{ms})$} \par
+          \shdtt{$\interp { \neg a }(\mathit{es}, \mathit{ms})$} \par\noindent
           Negation is the final predicate to be examined.
           It is satisfied whenever the argument, a, is not.
           The negation of the identity would therefore return the falsity: \shdtt{$\interp{ \neg 1 }\defeq \interp{0}$}.
@@ -820,45 +820,44 @@ Finally, we will release this code, compiler, and language on GitHub.
 
 
         \paragraph{Obfuscation:}
-          \shdtt{$\interp {(\Phi_{En}, \Phi_{De})}(es, ms)$} \par
+          \shdtt{$\interp {(\Phi_{En}, \Phi_{De})}(es, ms)$} \par\noindent
           \textbf{TODO: ADD CONTENT}
 
         \paragraph{Injection to State Register:}
-          \shdtt{$\interp { inj_{i}(i) }(\mathit{es}, \mathit{ms})$} \par
-          \textbf{TODO: DON'T INDENT AFTER PARAGRAPH TITLE}
+          \shdtt{$\interp { inj_{i}(i) }(\mathit{es}, \mathit{ms})$} \par\noindent
           Injection to State Register will inject an instruction into the stream.
           Imagine if the printer could add its own page to the middle of a multi-page job.
           This is pretty much the same as what injecting a value does.
           The injected data are not in the input stream for the instructions, but appears on the output.
 
         \paragraph{Injection to Memory Unit:}
-          \shdtt{$\interp { inj_{r}(r) }(\mathit{es}, \mathit{ms})$} \par
+          \shdtt{$\interp { inj_{r}(r) }(\mathit{es}, \mathit{ms})$} \par\noindent
           Injecting to the memory unit acts the same as injecting data to the state register.
           Rather, it injects on the register-to-memory stream.
 
 
         \paragraph{Modification:}
-          \shdtt{$\interp { f \leftarrow n }(\mathit{es}, \mathit{ms})$} \par
+          \shdtt{$\interp { f \leftarrow n }(\mathit{es}, \mathit{ms})$} \par\noindent
           Modification is \sysname's system for assigning a variable, or field.
           Modification can be used if the programmer would like to redirect a sensitive result to a secure address.
           It can also be used to temporarily store a value to be re-inserted later.
 
         \paragraph{Policy Union:}
-          \shdtt{$\interp { p + q }(\mathit{es}, \mathit{ms})$} \par
+          \shdtt{$\interp { p + q }(\mathit{es}, \mathit{ms})$} \par\noindent
           A policy union is when a programmer wishes to have two separare policies operate in parallel.
           Often times, only the $p$ or $q$ policies are satisfied, and not both.
           This can be used in decision making or if the user wants to apply one policy to the results and a different one to the actions.
           In this case, they would also use the slicing rules.
 
         \paragraph{Policy Concatenation:}
-          \shdtt{$\interp { p \cdot q }(\mathit{es}, \mathit{ms})$} \par
+          \shdtt{$\interp { p \cdot q }(\mathit{es}, \mathit{ms})$} \par\noindent
           Policy concatenation is used when the user wants to design a policy that has specific prerequisites to trigger.
           A policy may modify all branches, but only \textit{after} a load instruction has passed through.
           This allows for a granular, state-machine-like implementation of multiple policies at once.
 
 
         \paragraph{Filter:}
-          \shdtt{$\interp{\mathsf{filter}\ f}(S)$} \par
+          \shdtt{$\interp{\mathsf{filter}\ f}(S)$} \par\noindent
           The filter is a function defined to assist in describing the semantics of test.
           It is included at the end of policy syntax definitions, as it also applies to the use of ``test'' as a policy.
           While the keyword is never used, the test policy functions the same as the test predicate.
@@ -866,7 +865,7 @@ Finally, we will release this code, compiler, and language on GitHub.
           It is an operation over a set $S$ which returns all elements that satisfy the conditional $f$.
 
         \paragraph{Map:}
-          \shdtt{$\interp{\mathsf{map}\ g}(S)$} \par
+          \shdtt{$\interp{\mathsf{map}\ g}(S)$} \par\noindent
           The map is very similar to the filter.
           Unlike filter, which takes a conditional $f$, map takes a function $g$.
           This function is applied to all elements in the set $S$, returning a modified set $S'$.
@@ -1044,11 +1043,11 @@ Finally, we will release this code, compiler, and language on GitHub.
       The regular expression \shdtt{(a)*} is satisfied by the strings \shdtt{\{'a', 'aa', $\dots$\}}.
       The stream arguments of \oldname can be viewed as an infinite string.
       An expression which forwards an input to the output would look something like this:
-      \shdtt{$let\ (x = read(input\_reg))\ in\ (write(output\_reg,x))$}.
+      \shdtt{$let\ (x = read(input\_reg))\ in\ $} \shdtt{$(write(output\_reg,x))$}.
       The input is assigned to the variable $x$, which is used in the $write$ command to be immediately output.
       This expression only runs once before the program looks for the next expression.
       If we \textit{Hardwire} this expression, it would act as an infinite loop that forwards \textit{all} inputs to the outputs:
-      \shdtt{$forever\ (let\ (x = read(input\_reg))\ in\ (write(output\_reg,x)))$}.
+      \shdtt{$forever\ (let\ (x = read(input\_reg))\ in\ $} \shdtt{$(write(output\_reg,x)))$}.
       Once the expression is used it will repeat itself.
       \begin{figure}
         \centering
@@ -1116,11 +1115,12 @@ Finally, we will release this code, compiler, and language on GitHub.
         \textbf{TODO: INSERT NOTES ON THE FOLLOWING}
 
         \paragraph{Falsity:}
-          $\mathbf{C}[0]$ \par
+          $\mathbf{C}[0]$ \par\noindent
           %\shdtt{$\mathbf{C}[0]$} \par
 
         \paragraph{Identity:}
-          $\mathbf{C}[1]$ \par
+          $\mathbf{C}[1]$ \par\noindent
+          The Identity simply passes all values straight through.
 
         \paragraph{Test:}
           $\mathbf{C}[f = n]$ \par
@@ -1225,22 +1225,22 @@ Finally, we will release this code, compiler, and language on GitHub.
         \textbf{TODO: INSERT NOTES ON THE FOLLOWING}
 
         \paragraph{Obfuscation:}
-          $\mathbf{C}[\cdot]$ \par
+          $\mathbf{C}[\cdot]$ \par\noindent
 
         \paragraph{Injection to State Register:}
-          $\mathbf{C}[inj_{SR}V]$ \par
+          $\mathbf{C}[inj_{SR}V]$ \par\noindent
 
         \paragraph{Injection to Memory Unit:}
-          $\mathbf{C}[inj_{Mi}V]$ \par
+          $\mathbf{C}[inj_{Mi}V]$ \par\noindent
 
         \paragraph{Modification:}
-          $\mathbf{C}[f \leftarrow n]$ \par
+          $\mathbf{C}[f \leftarrow n]$ \par\noindent
 
         \paragraph{Policy Union:}
-          $\mathbf{C}[p + q]$ \par
+          $\mathbf{C}[p + q]$ \par\noindent
 
         \paragraph{Policy Concatenation:}
-          $\mathbf{C}[p \cdot q]$ \par
+          $\mathbf{C}[p \cdot q]$ \par\noindent
 
         Compilation of policies to the intermediate language is not that much more complicated than the predicates.
         Starting immediately with the slices, Figure~\ref{fig:comp:comp:pol} shows that each only needs to declare two new buffers.
